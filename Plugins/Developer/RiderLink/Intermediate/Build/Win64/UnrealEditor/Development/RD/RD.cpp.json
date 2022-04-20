@@ -1,11 +1,11 @@
 {
     "Version": "1.1",
     "Data": {
-        "Source": "e:\\unreal engine 5\\projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\rd.cpp",
+        "Source": "e:\\unreal engine 5\\ue5 projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\rd.cpp",
         "ProvidedModule": "",
         "Includes": [
-            "e:\\unreal engine 5\\projects\\basebuilder\\plugins\\developer\\riderlink\\intermediate\\build\\win64\\unrealeditor\\development\\rd\\definitions.h",
-            "e:\\unreal engine 5\\projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\rd.h",
+            "e:\\unreal engine 5\\ue5 projects\\basebuilder\\plugins\\developer\\riderlink\\intermediate\\build\\win64\\unrealeditor\\development\\rd\\definitions.h",
+            "e:\\unreal engine 5\\ue5 projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\rd.h",
             "e:\\unreal engine 5\\ue_5.0\\engine\\source\\runtime\\core\\public\\logging\\logmacros.h",
             "e:\\unreal engine 5\\ue_5.0\\engine\\source\\runtime\\core\\public\\coretypes.h",
             "e:\\unreal engine 5\\ue_5.0\\engine\\source\\runtime\\core\\public\\hal\\platform.h",

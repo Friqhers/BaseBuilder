@@ -6,6 +6,24 @@
 #include "GameFramework/Actor.h"
 #include "BBBaseBlock.generated.h"
 
+class ABBCharacter;
+
+USTRUCT()
+struct FMoveObject
+{
+	GENERATED_BODY()
+
+public:
+
+	UPROPERTY()
+	AActor* NewMovableObject;
+	
+	UPROPERTY()
+	FVector TeleportDest;
+	
+	FVector_NetQuantize test;
+};
+
 UCLASS()
 class BASEBUILDER_API ABBBaseBlock : public AActor
 {
@@ -22,10 +40,29 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
 	UStaticMeshComponent* BaseBlockMesh;
 
+
+	void UpdatePosition();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerUpdatePosition();
+
+	UPROPERTY(ReplicatedUsing = OnRep_ObjectMovingChange)
+	FMoveObject CurrentObjectAndMovingMode;
+
+	UFUNCTION()
+	void OnRep_ObjectMovingChange();
 	
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UPROPERTY(BlueprintReadWrite, Category = "BaseBlock", Replicated)
+	bool BlockIsActive = false;
+
+	UPROPERTY(BlueprintReadWrite, Category = "BaseBlock", Replicated)
+	ABBCharacter* OwnerCharacter = nullptr;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Baseblock options")
+	int defaultDistanceBetween = 200;
 };

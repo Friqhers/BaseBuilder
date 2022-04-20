@@ -6,6 +6,6 @@
 /NAME:"UnrealEditor-RiderShaderInfoDump.dll"
 /IGNORE:4221
 /NODEFAULTLIB
-"E:\Unreal Engine 5\Projects\BaseBuilder\Plugins\Developer\RiderLink\Intermediate\Build\Win64\UnrealEditor\Development\RiderShaderInfoDump\RiderShaderInfoDump.cpp.obj"
-"E:\Unreal Engine 5\Projects\BaseBuilder\Plugins\Developer\RiderLink\Intermediate\Build\Win64\UnrealEditor\Development\RiderShaderInfoDump\Default.rc2.res"
-/OUT:"E:\Unreal Engine 5\Projects\BaseBuilder\Plugins\Developer\RiderLink\Intermediate\Build\Win64\UnrealEditor\Development\RiderShaderInfoDump\UnrealEditor-RiderShaderInfoDump.lib"
+"E:\Unreal Engine 5\UE5 Projects\BaseBuilder\Plugins\Developer\RiderLink\Intermediate\Build\Win64\UnrealEditor\Development\RiderShaderInfoDump\RiderShaderInfoDump.cpp.obj"
+"E:\Unreal Engine 5\UE5 Projects\BaseBuilder\Plugins\Developer\RiderLink\Intermediate\Build\Win64\UnrealEditor\Development\RiderShaderInfoDump\Default.rc2.res"
+/OUT:"E:\Unreal Engine 5\UE5 Projects\BaseBuilder\Plugins\Developer\RiderLink\Intermediate\Build\Win64\UnrealEditor\Development\RiderShaderInfoDump\UnrealEditor-RiderShaderInfoDump.lib"

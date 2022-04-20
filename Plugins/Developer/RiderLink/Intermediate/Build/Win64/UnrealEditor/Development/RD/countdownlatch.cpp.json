@@ -1,10 +1,10 @@
 {
     "Version": "1.1",
     "Data": {
-        "Source": "e:\\unreal engine 5\\projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\thirdparty\\countdownlatch\\countdownlatch.cpp",
+        "Source": "e:\\unreal engine 5\\ue5 projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\thirdparty\\countdownlatch\\countdownlatch.cpp",
         "ProvidedModule": "",
         "Includes": [
-            "e:\\unreal engine 5\\projects\\basebuilder\\plugins\\developer\\riderlink\\intermediate\\build\\win64\\unrealeditor\\development\\rd\\definitions.h",
+            "e:\\unreal engine 5\\ue5 projects\\basebuilder\\plugins\\developer\\riderlink\\intermediate\\build\\win64\\unrealeditor\\development\\rd\\definitions.h",
             "d:\\visual studio\\vc\\tools\\msvc\\14.29.30133\\include\\chrono",
             "d:\\visual studio\\vc\\tools\\msvc\\14.29.30133\\include\\yvals_core.h",
             "d:\\visual studio\\vc\\tools\\msvc\\14.29.30133\\include\\vcruntime.h",
@@ -66,7 +66,7 @@
             "d:\\visual studio\\vc\\tools\\msvc\\14.29.30133\\include\\vcruntime_new.h",
             "d:\\visual studio\\vc\\tools\\msvc\\14.29.30133\\include\\crtdefs.h",
             "d:\\visual studio\\vc\\tools\\msvc\\14.29.30133\\include\\use_ansi.h",
-            "e:\\unreal engine 5\\projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\thirdparty\\countdownlatch\\countdownlatch.hpp",
+            "e:\\unreal engine 5\\ue5 projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\thirdparty\\countdownlatch\\countdownlatch.hpp",
             "d:\\visual studio\\vc\\tools\\msvc\\14.29.30133\\include\\cinttypes",
             "c:\\program files (x86)\\windows kits\\10\\include\\10.0.17763.0\\ucrt\\inttypes.h",
             "d:\\visual studio\\vc\\tools\\msvc\\14.29.30133\\include\\mutex",

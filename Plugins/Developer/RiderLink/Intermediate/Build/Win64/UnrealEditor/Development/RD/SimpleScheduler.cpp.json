@@ -1,12 +1,12 @@
 {
     "Version": "1.1",
     "Data": {
-        "Source": "e:\\unreal engine 5\\projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_framework_cpp\\src\\main\\scheduler\\simplescheduler.cpp",
+        "Source": "e:\\unreal engine 5\\ue5 projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_framework_cpp\\src\\main\\scheduler\\simplescheduler.cpp",
         "ProvidedModule": "",
         "Includes": [
-            "e:\\unreal engine 5\\projects\\basebuilder\\plugins\\developer\\riderlink\\intermediate\\build\\win64\\unrealeditor\\development\\rd\\definitions.h",
-            "e:\\unreal engine 5\\projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_framework_cpp\\src\\main\\scheduler\\simplescheduler.h",
-            "e:\\unreal engine 5\\projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_framework_cpp\\src\\main\\scheduler\\base\\ischeduler.h",
+            "e:\\unreal engine 5\\ue5 projects\\basebuilder\\plugins\\developer\\riderlink\\intermediate\\build\\win64\\unrealeditor\\development\\rd\\definitions.h",
+            "e:\\unreal engine 5\\ue5 projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_framework_cpp\\src\\main\\scheduler\\simplescheduler.h",
+            "e:\\unreal engine 5\\ue5 projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_framework_cpp\\src\\main\\scheduler\\base\\ischeduler.h",
             "d:\\visual studio\\vc\\tools\\msvc\\14.29.30133\\include\\functional",
             "d:\\visual studio\\vc\\tools\\msvc\\14.29.30133\\include\\yvals_core.h",
             "d:\\visual studio\\vc\\tools\\msvc\\14.29.30133\\include\\vcruntime.h",
@@ -101,7 +101,7 @@
             "c:\\program files (x86)\\windows kits\\10\\include\\10.0.17763.0\\ucrt\\math.h",
             "d:\\visual studio\\vc\\tools\\msvc\\14.29.30133\\include\\vcruntime_startup.h",
             "d:\\visual studio\\vc\\tools\\msvc\\14.29.30133\\include\\xthreads.h",
-            "e:\\unreal engine 5\\projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_framework_cpp\\rd_framework_export.h"
+            "e:\\unreal engine 5\\ue5 projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_framework_cpp\\rd_framework_export.h"
         ],
         "ImportedModules": [],
         "ImportedHeaderUnits": []

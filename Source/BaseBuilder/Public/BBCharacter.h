@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "BBCharacter.generated.h"
 
+class ABBBaseBlock;
+
 UCLASS()
 class BASEBUILDER_API ABBCharacter : public ACharacter
 {
@@ -25,8 +27,23 @@ protected:
 	void EndCrouch();
 	void CJump();
 
+	void Pickup();
+	
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerPickup();
+	
+	void Drop();
+	
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerDrop();
+
+	ABBBaseBlock* CurrentBaseBlock = nullptr;
+	
 	UPROPERTY(BlueprintReadWrite, Replicated)
 	bool test;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Character Options")
+	int BlocPickupDistance = 1000;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

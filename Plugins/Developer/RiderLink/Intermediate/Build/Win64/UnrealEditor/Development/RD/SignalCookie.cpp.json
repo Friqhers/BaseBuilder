@@ -1,11 +1,11 @@
 {
     "Version": "1.1",
     "Data": {
-        "Source": "e:\\unreal engine 5\\projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_core_cpp\\src\\main\\reactive\\base\\signalcookie.cpp",
+        "Source": "e:\\unreal engine 5\\ue5 projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_core_cpp\\src\\main\\reactive\\base\\signalcookie.cpp",
         "ProvidedModule": "",
         "Includes": [
-            "e:\\unreal engine 5\\projects\\basebuilder\\plugins\\developer\\riderlink\\intermediate\\build\\win64\\unrealeditor\\development\\rd\\definitions.h",
-            "e:\\unreal engine 5\\projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_core_cpp\\src\\main\\reactive\\base\\signalcookie.h",
+            "e:\\unreal engine 5\\ue5 projects\\basebuilder\\plugins\\developer\\riderlink\\intermediate\\build\\win64\\unrealeditor\\development\\rd\\definitions.h",
+            "e:\\unreal engine 5\\ue5 projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_core_cpp\\src\\main\\reactive\\base\\signalcookie.h",
             "d:\\visual studio\\vc\\tools\\msvc\\14.29.30133\\include\\cstdint",
             "d:\\visual studio\\vc\\tools\\msvc\\14.29.30133\\include\\yvals_core.h",
             "d:\\visual studio\\vc\\tools\\msvc\\14.29.30133\\include\\vcruntime.h",
@@ -14,7 +14,7 @@
             "d:\\visual studio\\vc\\tools\\msvc\\14.29.30133\\include\\vadefs.h",
             "d:\\visual studio\\vc\\tools\\msvc\\14.29.30133\\include\\xkeycheck.h",
             "d:\\visual studio\\vc\\tools\\msvc\\14.29.30133\\include\\stdint.h",
-            "e:\\unreal engine 5\\projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_core_cpp\\rd_core_export.h",
+            "e:\\unreal engine 5\\ue5 projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_core_cpp\\rd_core_export.h",
             "d:\\visual studio\\vc\\tools\\msvc\\14.29.30133\\include\\atomic",
             "d:\\visual studio\\vc\\tools\\msvc\\14.29.30133\\include\\yvals.h",
             "c:\\program files (x86)\\windows kits\\10\\include\\10.0.17763.0\\ucrt\\crtdbg.h",

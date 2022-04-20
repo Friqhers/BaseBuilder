@@ -2,6 +2,7 @@
 
 
 #include "BBCharacter.h"
+#include "BBBaseBlock.h"
 #include "GameFramework/Actor.h"
 #include "Net/UnrealNetwork.h"
 
@@ -51,6 +52,79 @@ void ABBCharacter::CJump()
 {
 }
 
+void ABBCharacter::Pickup()
+{
+	FHitResult HitResult;
+	FVector EyeLocation;
+	FRotator EyeRotation;
+	GetActorEyesViewPoint(EyeLocation,EyeRotation);
+
+	FVector direction = EyeRotation.Vector();
+	FVector traceEnd = EyeLocation + (direction * BlocPickupDistance);
+
+
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+	QueryParams.bTraceComplex = true;
+	
+	if(GetWorld()->LineTraceSingleByChannel(HitResult, EyeLocation, traceEnd, ECollisionChannel::ECC_Visibility,QueryParams))
+	{
+		DrawDebugLine(GetWorld(), EyeLocation, HitResult.ImpactPoint, FColor::Green,false, 1.0f,0,1.0f);
+
+		ABBBaseBlock* BaseBlock = Cast<ABBBaseBlock>(HitResult.GetActor());
+		if(BaseBlock)
+		{
+			BaseBlock->BlockIsActive = true;
+			BaseBlock->OwnerCharacter = this;
+
+			CurrentBaseBlock = BaseBlock;
+			
+			FVector blockTeleportPosition = EyeLocation + (direction * BaseBlock->defaultDistanceBetween);
+			BaseBlock->SetActorLocation(blockTeleportPosition);
+
+			if(!HasAuthority())
+			{
+				ServerPickup();
+			}
+		}
+	}
+}
+
+void ABBCharacter::ServerPickup_Implementation()
+{
+	Pickup();
+}
+
+bool ABBCharacter::ServerPickup_Validate()
+{
+	return true;
+}
+
+void ABBCharacter::Drop()
+{
+	if(CurrentBaseBlock)
+	{
+		CurrentBaseBlock->BlockIsActive = false;
+		CurrentBaseBlock->OwnerCharacter = nullptr;
+		CurrentBaseBlock = nullptr;
+		
+		if(!HasAuthority())
+		{
+			ServerDrop();
+		}
+	}
+}
+
+void ABBCharacter::ServerDrop_Implementation()
+{
+	Drop();
+}
+
+bool ABBCharacter::ServerDrop_Validate()
+{
+	return true;
+}
+
 
 // Called to bind functionality to input
 void ABBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -65,6 +139,9 @@ void ABBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	
 	PlayerInputComponent->BindAction("Crouch", EInputEvent::IE_Pressed, this, &ABBCharacter::BeginCrouch);
 	PlayerInputComponent->BindAction("Crouch", EInputEvent::IE_Released, this, &ABBCharacter::EndCrouch);
+
+	PlayerInputComponent->BindAction("Interact", EInputEvent::IE_Pressed, this, &ABBCharacter::Pickup);
+	PlayerInputComponent->BindAction("Interact", EInputEvent::IE_Released, this, &ABBCharacter::Drop);
 
 }
 

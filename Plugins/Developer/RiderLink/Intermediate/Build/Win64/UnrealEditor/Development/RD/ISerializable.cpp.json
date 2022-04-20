@@ -1,11 +1,11 @@
 {
     "Version": "1.1",
     "Data": {
-        "Source": "e:\\unreal engine 5\\projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_framework_cpp\\src\\main\\serialization\\iserializable.cpp",
+        "Source": "e:\\unreal engine 5\\ue5 projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_framework_cpp\\src\\main\\serialization\\iserializable.cpp",
         "ProvidedModule": "",
         "Includes": [
-            "e:\\unreal engine 5\\projects\\basebuilder\\plugins\\developer\\riderlink\\intermediate\\build\\win64\\unrealeditor\\development\\rd\\definitions.h",
-            "e:\\unreal engine 5\\projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_framework_cpp\\src\\main\\serialization\\iserializable.h",
+            "e:\\unreal engine 5\\ue5 projects\\basebuilder\\plugins\\developer\\riderlink\\intermediate\\build\\win64\\unrealeditor\\development\\rd\\definitions.h",
+            "e:\\unreal engine 5\\ue5 projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_framework_cpp\\src\\main\\serialization\\iserializable.h",
             "d:\\visual studio\\vc\\tools\\msvc\\14.29.30133\\include\\string",
             "d:\\visual studio\\vc\\tools\\msvc\\14.29.30133\\include\\yvals_core.h",
             "d:\\visual studio\\vc\\tools\\msvc\\14.29.30133\\include\\vcruntime.h",
@@ -81,8 +81,8 @@
             "d:\\visual studio\\vc\\tools\\msvc\\14.29.30133\\include\\tuple",
             "d:\\visual studio\\vc\\tools\\msvc\\14.29.30133\\include\\cctype",
             "c:\\program files (x86)\\windows kits\\10\\include\\10.0.17763.0\\ucrt\\ctype.h",
-            "e:\\unreal engine 5\\projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_framework_cpp\\rd_framework_export.h",
-            "e:\\unreal engine 5\\projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_core_cpp\\src\\main\\std\\hash.h",
+            "e:\\unreal engine 5\\ue5 projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_framework_cpp\\rd_framework_export.h",
+            "e:\\unreal engine 5\\ue5 projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_core_cpp\\src\\main\\std\\hash.h",
             "d:\\visual studio\\vc\\tools\\msvc\\14.29.30133\\include\\functional",
             "d:\\visual studio\\vc\\tools\\msvc\\14.29.30133\\include\\typeinfo",
             "d:\\visual studio\\vc\\tools\\msvc\\14.29.30133\\include\\vcruntime_typeinfo.h",

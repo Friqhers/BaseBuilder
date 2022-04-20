@@ -1,11 +1,11 @@
 {
     "Version": "1.1",
     "Data": {
-        "Source": "e:\\unreal engine 5\\projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_framework_cpp\\src\\main\\base\\iserializersowner.cpp",
+        "Source": "e:\\unreal engine 5\\ue5 projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_framework_cpp\\src\\main\\base\\iserializersowner.cpp",
         "ProvidedModule": "",
         "Includes": [
-            "e:\\unreal engine 5\\projects\\basebuilder\\plugins\\developer\\riderlink\\intermediate\\build\\win64\\unrealeditor\\development\\rd\\definitions.h",
-            "e:\\unreal engine 5\\projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_framework_cpp\\src\\main\\base\\iserializersowner.h",
+            "e:\\unreal engine 5\\ue5 projects\\basebuilder\\plugins\\developer\\riderlink\\intermediate\\build\\win64\\unrealeditor\\development\\rd\\definitions.h",
+            "e:\\unreal engine 5\\ue5 projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_framework_cpp\\src\\main\\base\\iserializersowner.h",
             "d:\\visual studio\\vc\\tools\\msvc\\14.29.30133\\include\\unordered_set",
             "d:\\visual studio\\vc\\tools\\msvc\\14.29.30133\\include\\yvals_core.h",
             "d:\\visual studio\\vc\\tools\\msvc\\14.29.30133\\include\\vcruntime.h",
@@ -85,7 +85,7 @@
             "d:\\visual studio\\vc\\tools\\msvc\\14.29.30133\\include\\xstring",
             "d:\\visual studio\\vc\\tools\\msvc\\14.29.30133\\include\\iosfwd",
             "d:\\visual studio\\vc\\tools\\msvc\\14.29.30133\\include\\xnode_handle.h",
-            "e:\\unreal engine 5\\projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_framework_cpp\\rd_framework_export.h"
+            "e:\\unreal engine 5\\ue5 projects\\basebuilder\\plugins\\developer\\riderlink\\source\\rd\\src\\rd_framework_cpp\\rd_framework_export.h"
         ],
         "ImportedModules": [],
         "ImportedHeaderUnits": []
