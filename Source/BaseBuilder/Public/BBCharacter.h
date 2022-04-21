@@ -39,9 +39,6 @@ protected:
 
 	ABBBaseBlock* CurrentBaseBlock = nullptr;
 	
-	UPROPERTY(BlueprintReadWrite, Replicated)
-	bool test;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Character Options")
 	int BlocPickupDistance = 1000;
 public:	
@@ -50,5 +47,20 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+public:
+	/* Is character currently performing a jump action. Resets on landed.  */
+	UPROPERTY(Transient, Replicated)
+	bool bIsJumping;
+
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+	bool IsInitiatedJump() const;
+
+	void SetIsJumping(bool NewJumping);
+
+	UFUNCTION(Reliable, Server, WithValidation)
+	void ServerSetIsJumping(bool NewJumping);
+
+	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode = 0) override;
+
 
 };

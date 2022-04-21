@@ -15,25 +15,26 @@ ABBBaseBlock::ABBBaseBlock()
 	BaseBlockMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	RootComponent = BaseBlockMesh;
 
+	SetReplicates(true);
 }
 
 // Called when the game starts or when spawned
 void ABBBaseBlock::BeginPlay()
 {
 	Super::BeginPlay();
+	SetReplicateMovement(true);
 }
 
 // Called every frame
 void ABBBaseBlock::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	if (BlockIsActive && OwnerCharacter)
+	
+	if(HasAuthority())
 	{
-		UpdatePosition();
-		if (!HasAuthority())
+		if(BlockIsActive && OwnerCharacter)
 		{
-			ServerUpdatePosition();
+			UpdatePosition();
 		}
 	}
 }
@@ -49,31 +50,12 @@ void ABBBaseBlock::UpdatePosition()
 
 	SetActorLocation(blockTeleportPosition);
 
-	if(HasAuthority())
-	{
-		CurrentObjectAndMovingMode.NewMovableObject = Cast<AActor>(this);
-		CurrentObjectAndMovingMode.TeleportDest = blockTeleportPosition;
-	}
 }
 
-void ABBBaseBlock::ServerUpdatePosition_Implementation()
+void ABBBaseBlock::OnRep_CollisionEnabled()
 {
-	UpdatePosition();
+	SetActorEnableCollision(collisionEnabled);
 }
-
-bool ABBBaseBlock::ServerUpdatePosition_Validate()
-{
-	return true;
-}
-
-
-void ABBBaseBlock::OnRep_ObjectMovingChange()
-{
-	CurrentObjectAndMovingMode.NewMovableObject->SetActorLocation(CurrentObjectAndMovingMode.TeleportDest);
-	CurrentObjectAndMovingMode.NewMovableObject = nullptr;
-	CurrentObjectAndMovingMode.TeleportDest = FVector();
-}
-
 
 void ABBBaseBlock::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -81,5 +63,5 @@ void ABBBaseBlock::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 
 	DOREPLIFETIME(ABBBaseBlock, BlockIsActive);
 	DOREPLIFETIME(ABBBaseBlock, OwnerCharacter);
-	DOREPLIFETIME(ABBBaseBlock, CurrentObjectAndMovingMode);
+	DOREPLIFETIME(ABBBaseBlock,collisionEnabled);
 }

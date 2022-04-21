@@ -8,21 +8,6 @@
 
 class ABBCharacter;
 
-USTRUCT()
-struct FMoveObject
-{
-	GENERATED_BODY()
-
-public:
-
-	UPROPERTY()
-	AActor* NewMovableObject;
-	
-	UPROPERTY()
-	FVector TeleportDest;
-	
-	FVector_NetQuantize test;
-};
 
 UCLASS()
 class BASEBUILDER_API ABBBaseBlock : public AActor
@@ -39,18 +24,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
 	UStaticMeshComponent* BaseBlockMesh;
-
-
+	
 	void UpdatePosition();
 
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerUpdatePosition();
-
-	UPROPERTY(ReplicatedUsing = OnRep_ObjectMovingChange)
-	FMoveObject CurrentObjectAndMovingMode;
-
-	UFUNCTION()
-	void OnRep_ObjectMovingChange();
 	
 
 public:	
@@ -65,4 +41,11 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Baseblock options")
 	int defaultDistanceBetween = 200;
+	
+public:
+	UPROPERTY(ReplicatedUsing=OnRep_collisionEnabled)
+	bool collisionEnabled = true;
+protected:
+	UFUNCTION()
+	void OnRep_CollisionEnabled();
 };

@@ -3,8 +3,10 @@
 
 #include "BBCharacter.h"
 #include "BBBaseBlock.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/Actor.h"
 #include "Net/UnrealNetwork.h"
+#include "GameFramework\CharacterMovementComponent.h"
 
 // Sets default values
 ABBCharacter::ABBCharacter()
@@ -40,20 +42,40 @@ void ABBCharacter::MoveRight(float value)
 
 void ABBCharacter::BeginCrouch()
 {
-	Crouch();
+	if (IsInitiatedJump() != true)
+	{
+		Crouch();
+	}
+	else
+	{
+		Crouch();
+		float halfHeight = GetCharacterMovement()->CrouchedHalfHeight;
+		AddActorWorldOffset(FVector(0,0,halfHeight));
+	}
+	
 }
 
 void ABBCharacter::EndCrouch()
 {
+	// if (IsInitiatedJump() != true)
+	// {
+	// 	UnCrouch();
+	// }
 	UnCrouch();
 }
 
 void ABBCharacter::CJump()
 {
+	SetIsJumping(true);
 }
 
 void ABBCharacter::Pickup()
 {
+	if(HasAuthority() == false)
+	{
+		ServerPickup();
+	}
+	
 	FHitResult HitResult;
 	FVector EyeLocation;
 	FRotator EyeRotation;
@@ -74,6 +96,9 @@ void ABBCharacter::Pickup()
 		ABBBaseBlock* BaseBlock = Cast<ABBBaseBlock>(HitResult.GetActor());
 		if(BaseBlock)
 		{
+			BaseBlock->SetActorEnableCollision(false);
+			BaseBlock->collisionEnabled = false;
+			
 			BaseBlock->BlockIsActive = true;
 			BaseBlock->OwnerCharacter = this;
 
@@ -81,12 +106,12 @@ void ABBCharacter::Pickup()
 			
 			FVector blockTeleportPosition = EyeLocation + (direction * BaseBlock->defaultDistanceBetween);
 			BaseBlock->SetActorLocation(blockTeleportPosition);
-
-			if(!HasAuthority())
-			{
-				ServerPickup();
-			}
+			
 		}
+	}
+	else
+	{
+		DrawDebugLine(GetWorld(), EyeLocation, traceEnd, FColor::Red,false, 1.0f,0,1.0f);
 	}
 }
 
@@ -102,16 +127,18 @@ bool ABBCharacter::ServerPickup_Validate()
 
 void ABBCharacter::Drop()
 {
+	if(HasAuthority() == false)
+	{
+		ServerDrop();
+	}
+	
 	if(CurrentBaseBlock)
 	{
+		CurrentBaseBlock->SetActorEnableCollision(true);
+		CurrentBaseBlock->collisionEnabled = true;
 		CurrentBaseBlock->BlockIsActive = false;
 		CurrentBaseBlock->OwnerCharacter = nullptr;
 		CurrentBaseBlock = nullptr;
-		
-		if(!HasAuthority())
-		{
-			ServerDrop();
-		}
 	}
 }
 
@@ -143,12 +170,61 @@ void ABBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	PlayerInputComponent->BindAction("Interact", EInputEvent::IE_Pressed, this, &ABBCharacter::Pickup);
 	PlayerInputComponent->BindAction("Interact", EInputEvent::IE_Released, this, &ABBCharacter::Drop);
 
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ABBCharacter::CJump);
+
+}
+
+bool ABBCharacter::IsInitiatedJump() const
+{
+	return bIsJumping;
+}
+
+void ABBCharacter::SetIsJumping(bool NewJumping)
+{
+	if(bIsCrouched && NewJumping)
+	{
+		UnCrouch();
+	}
+	else if(NewJumping != bIsJumping)
+	{
+		bIsJumping = NewJumping;
+		if(bIsJumping)
+		{
+			Jump();
+		}
+	}
+
+	if(HasAuthority() == false)
+	{
+		ServerSetIsJumping(NewJumping);
+	}
+}
+
+void ABBCharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode)
+{
+	Super::OnMovementModeChanged(PrevMovementMode, PreviousCustomMode);
+
+	/* Check if we are no longer falling/jumping */
+	if (PrevMovementMode == EMovementMode::MOVE_Falling && GetCharacterMovement()->MovementMode != EMovementMode::MOVE_Falling)
+	{
+		SetIsJumping(false);
+	}
+}
+
+void ABBCharacter::ServerSetIsJumping_Implementation(bool NewJumping)
+{
+	SetIsJumping(NewJumping);
+}
+
+bool ABBCharacter::ServerSetIsJumping_Validate(bool NewJumping)
+{
+	return true;
 }
 
 void ABBCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(ABBCharacter, test);
+	DOREPLIFETIME(ABBCharacter, bIsJumping);
 }
 
