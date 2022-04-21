@@ -50,7 +50,7 @@ void ABBCharacter::BeginCrouch()
 	{
 		Crouch();
 		float halfHeight = GetCharacterMovement()->CrouchedHalfHeight;
-		AddActorWorldOffset(FVector(0,0,halfHeight));
+		AddActorWorldOffset(FVector(0,0,halfHeight/2));
 	}
 	
 }
@@ -66,7 +66,13 @@ void ABBCharacter::EndCrouch()
 
 void ABBCharacter::CJump()
 {
-	SetIsJumping(true);
+	//float FirstDelay = FMath::Max(lastJumpTime + TimeBetweenJumps - GetWorld()->TimeSeconds, 0.0f);
+	float currentTime = GetWorld()->TimeSeconds;
+	if(currentTime-lastJumpTime >= TimeBetweenJumps)
+	{
+		SetIsJumping(true);
+	}
+	
 }
 
 void ABBCharacter::Pickup()
@@ -190,6 +196,7 @@ void ABBCharacter::SetIsJumping(bool NewJumping)
 		bIsJumping = NewJumping;
 		if(bIsJumping)
 		{
+			lastJumpTime = GetWorld()->TimeSeconds;
 			Jump();
 		}
 	}
@@ -208,8 +215,10 @@ void ABBCharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 P
 	if (PrevMovementMode == EMovementMode::MOVE_Falling && GetCharacterMovement()->MovementMode != EMovementMode::MOVE_Falling)
 	{
 		SetIsJumping(false);
+		jumpFinished = true;
 	}
 }
+
 
 void ABBCharacter::ServerSetIsJumping_Implementation(bool NewJumping)
 {

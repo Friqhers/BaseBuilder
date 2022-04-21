@@ -61,6 +61,18 @@ public:
 	void ServerSetIsJumping(bool NewJumping);
 
 	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode = 0) override;
+protected:
+	FTimerHandle TimerHandle_FinishJump;
+
+	void FinishJump();
+	
+	bool jumpFinished = false;
+
+	float lastJumpTime = 0;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Character Options")
+	float TimeBetweenJumps = 0.67f;
 
 
 };
+
