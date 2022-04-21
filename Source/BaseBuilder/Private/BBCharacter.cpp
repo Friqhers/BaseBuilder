@@ -7,12 +7,15 @@
 #include "GameFramework/Actor.h"
 #include "Net/UnrealNetwork.h"
 #include "GameFramework\CharacterMovementComponent.h"
+#include "Camera/CameraComponent.h"
 
 // Sets default values
 ABBCharacter::ABBCharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
+	CameraComp->SetupAttachment(RootComponent);
 
 }
 
@@ -21,6 +24,59 @@ void ABBCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+}
+
+void ABBCharacter::Pull()
+{
+	if(CurrentBaseBlock)
+	{
+		if(distanceBetween-pullPushPower > 100)
+		{
+			distanceBetween-= pullPushPower;
+		}
+
+		if(!HasAuthority())
+		{
+			ServerPull();
+		}
+	}
+}
+
+void ABBCharacter::Push()
+{
+	if(CurrentBaseBlock)
+	{
+		if(distanceBetween+pullPushPower < 10000)
+		{
+			distanceBetween+= pullPushPower;
+		}
+
+		if(!HasAuthority())
+		{
+			ServerPush();
+		}
+
+	}	
+}
+
+void ABBCharacter::ServerPush_Implementation()
+{
+	Push();
+}
+
+bool ABBCharacter::ServerPush_Validate()
+{
+	return true;
+}
+
+void ABBCharacter::ServerPull_Implementation()
+{
+	Pull();
+}
+
+bool ABBCharacter::ServerPull_Validate()
+{
+	return true;
 }
 
 // Called every frame
@@ -48,9 +104,12 @@ void ABBCharacter::BeginCrouch()
 	}
 	else
 	{
+		
 		Crouch();
 		float halfHeight = GetCharacterMovement()->CrouchedHalfHeight;
-		AddActorWorldOffset(FVector(0,0,halfHeight/2));
+		//CameraComp->AddRelativeLocation(FVector(0,0,halfHeight));
+		AddActorWorldOffset(FVector(0,0,halfHeight));
+		//CameraComp->AddRelativeLocation(FVector(0,0,-halfHeight));
 	}
 	
 }
@@ -109,9 +168,11 @@ void ABBCharacter::Pickup()
 			BaseBlock->OwnerCharacter = this;
 
 			CurrentBaseBlock = BaseBlock;
+
+			distanceBetween = FVector::Distance(EyeLocation, HitResult.GetActor()->GetActorLocation());
 			
-			FVector blockTeleportPosition = EyeLocation + (direction * BaseBlock->defaultDistanceBetween);
-			BaseBlock->SetActorLocation(blockTeleportPosition);
+			//FVector blockTeleportPosition = EyeLocation + (direction * BaseBlock->defaultDistanceBetween);
+			//BaseBlock->SetActorLocation(blockTeleportPosition);
 			
 		}
 	}
@@ -178,6 +239,9 @@ void ABBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ABBCharacter::CJump);
 
+	PlayerInputComponent->BindAction("Pull", IE_Pressed, this, &ABBCharacter::Pull);
+	PlayerInputComponent->BindAction("Push", IE_Pressed, this, &ABBCharacter::Push);
+
 }
 
 bool ABBCharacter::IsInitiatedJump() const
@@ -189,7 +253,7 @@ void ABBCharacter::SetIsJumping(bool NewJumping)
 {
 	if(bIsCrouched && NewJumping)
 	{
-		UnCrouch();
+		LaunchCharacter(FVector(0,0,420), true, true);
 	}
 	else if(NewJumping != bIsJumping)
 	{

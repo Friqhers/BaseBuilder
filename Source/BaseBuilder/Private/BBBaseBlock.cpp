@@ -46,7 +46,7 @@ void ABBBaseBlock::UpdatePosition()
 	OwnerCharacter->GetActorEyesViewPoint(eyeLocation, eyeRotation);
 
 	FVector direction = eyeRotation.Vector();
-	FVector blockTeleportPosition = eyeLocation + (direction * defaultDistanceBetween);
+	FVector blockTeleportPosition = eyeLocation + (direction * OwnerCharacter->distanceBetween);
 
 	SetActorLocation(blockTeleportPosition);
 

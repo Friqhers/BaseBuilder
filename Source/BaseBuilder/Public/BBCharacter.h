@@ -7,6 +7,7 @@
 #include "BBCharacter.generated.h"
 
 class ABBBaseBlock;
+class UCameraComponent;
 
 UCLASS()
 class BASEBUILDER_API ABBCharacter : public ACharacter
@@ -18,6 +19,10 @@ public:
 	ABBCharacter();
 
 protected:
+
+	UPROPERTY(VisibleanyWhere, BlueprintReadOnly, Category = "Components")
+	UCameraComponent* CameraComp;
+	
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
@@ -41,6 +46,22 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Character Options")
 	int BlocPickupDistance = 1000;
+
+	void Pull();
+	void Push();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerPull();
+	
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerPush();
+public:
+	UPROPERTY(BlueprintReadOnly)
+	int distanceBetween;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Options")
+	int pullPushPower = 10;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

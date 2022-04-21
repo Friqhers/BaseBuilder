@@ -38,9 +38,7 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Category = "BaseBlock", Replicated)
 	ABBCharacter* OwnerCharacter = nullptr;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Baseblock options")
-	int defaultDistanceBetween = 200;
+
 	
 public:
 	UPROPERTY(ReplicatedUsing=OnRep_collisionEnabled)
