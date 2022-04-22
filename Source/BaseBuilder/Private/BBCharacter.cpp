@@ -17,6 +17,9 @@ ABBCharacter::ABBCharacter()
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 	CameraComp->SetupAttachment(RootComponent);
 
+	crouchHalfHeight = GetCharacterMovement()->GetCrouchedHalfHeight();
+	capsuleHalfHeight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+
 }
 
 // Called when the game starts or when spawned
@@ -83,8 +86,8 @@ bool ABBCharacter::ServerPull_Validate()
 void ABBCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
+
 
 void ABBCharacter::MoveForward(float value)
 {
@@ -104,23 +107,45 @@ void ABBCharacter::BeginCrouch()
 	}
 	else
 	{
-		
 		Crouch();
-		float halfHeight = GetCharacterMovement()->CrouchedHalfHeight;
 		//CameraComp->AddRelativeLocation(FVector(0,0,halfHeight));
-		AddActorWorldOffset(FVector(0,0,halfHeight));
-		//CameraComp->AddRelativeLocation(FVector(0,0,-halfHeight));
+
+		float cameraHeight = CameraComp->GetRelativeLocation().Z;
+		float zOffset = (cameraHeight) - crouchHalfHeight;
+		AddActorWorldOffset(FVector(0, 0, zOffset));
+
+		if(!HasAuthority())
+		{
+			ServerCrouchJump();
+		}
+		
+		
+		//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		
+		// GetCapsuleComponent()->SetCapsuleSize(25, 40);
+		// GetCapsuleComponent()->AddRelativeLocation(FVector(0,0,48));
+		// //AddActorWorldOffset(FVector(0,0,48));
+		// bIsCrouchJumped = true;
+		
 	}
 	
 }
 
 void ABBCharacter::EndCrouch()
 {
-	// if (IsInitiatedJump() != true)
-	// {
-	// 	UnCrouch();
-	// }
 	UnCrouch();
+}
+
+void ABBCharacter::ServerCrouchJump_Implementation()
+{
+	float cameraHeight = CameraComp->GetRelativeLocation().Z;
+	float zOffset = (cameraHeight) - crouchHalfHeight;
+	AddActorWorldOffset(FVector(0,0, zOffset));
+}
+
+bool ABBCharacter::ServerCrouchJump_Validate()
+{
+	return true;
 }
 
 void ABBCharacter::CJump()
@@ -219,31 +244,6 @@ bool ABBCharacter::ServerDrop_Validate()
 	return true;
 }
 
-
-// Called to bind functionality to input
-void ABBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	PlayerInputComponent->BindAxis("MoveForward", this, &ABBCharacter::MoveForward);
-	PlayerInputComponent->BindAxis("MoveRight", this, &ABBCharacter::MoveRight);
-
-	PlayerInputComponent->BindAxis("LookUp", this, &ABBCharacter::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis("Turn", this, &ABBCharacter::AddControllerYawInput);
-	
-	PlayerInputComponent->BindAction("Crouch", EInputEvent::IE_Pressed, this, &ABBCharacter::BeginCrouch);
-	PlayerInputComponent->BindAction("Crouch", EInputEvent::IE_Released, this, &ABBCharacter::EndCrouch);
-
-	PlayerInputComponent->BindAction("Interact", EInputEvent::IE_Pressed, this, &ABBCharacter::Pickup);
-	PlayerInputComponent->BindAction("Interact", EInputEvent::IE_Released, this, &ABBCharacter::Drop);
-
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ABBCharacter::CJump);
-
-	PlayerInputComponent->BindAction("Pull", IE_Pressed, this, &ABBCharacter::Pull);
-	PlayerInputComponent->BindAction("Push", IE_Pressed, this, &ABBCharacter::Push);
-
-}
-
 bool ABBCharacter::IsInitiatedJump() const
 {
 	return bIsJumping;
@@ -283,6 +283,20 @@ void ABBCharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 P
 	}
 }
 
+void ABBCharacter::OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust)
+{
+	Super::OnStartCrouch(HalfHeightAdjust, ScaledHalfHeightAdjust);
+	//float cameraHeight = CameraComp->GetRelativeLocation().Z;
+	CameraComp->AddRelativeLocation(FVector(0,0, -(capsuleHalfHeight-crouchHalfHeight)));
+}
+
+void ABBCharacter::OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust)
+{
+	Super::OnEndCrouch(HalfHeightAdjust, ScaledHalfHeightAdjust);
+	//float cameraHeight = CameraComp->GetRelativeLocation().Z;
+	CameraComp->AddRelativeLocation(FVector(0,0, capsuleHalfHeight-crouchHalfHeight));
+}
+
 
 void ABBCharacter::ServerSetIsJumping_Implementation(bool NewJumping)
 {
@@ -293,6 +307,32 @@ bool ABBCharacter::ServerSetIsJumping_Validate(bool NewJumping)
 {
 	return true;
 }
+
+
+// Called to bind functionality to input
+void ABBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	PlayerInputComponent->BindAxis("MoveForward", this, &ABBCharacter::MoveForward);
+	PlayerInputComponent->BindAxis("MoveRight", this, &ABBCharacter::MoveRight);
+
+	PlayerInputComponent->BindAxis("LookUp", this, &ABBCharacter::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis("Turn", this, &ABBCharacter::AddControllerYawInput);
+	
+	PlayerInputComponent->BindAction("Crouch", EInputEvent::IE_Pressed, this, &ABBCharacter::BeginCrouch);
+	PlayerInputComponent->BindAction("Crouch", EInputEvent::IE_Released, this, &ABBCharacter::EndCrouch);
+
+	PlayerInputComponent->BindAction("Interact", EInputEvent::IE_Pressed, this, &ABBCharacter::Pickup);
+	PlayerInputComponent->BindAction("Interact", EInputEvent::IE_Released, this, &ABBCharacter::Drop);
+
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ABBCharacter::CJump);
+
+	PlayerInputComponent->BindAction("Pull", IE_Pressed, this, &ABBCharacter::Pull);
+	PlayerInputComponent->BindAction("Push", IE_Pressed, this, &ABBCharacter::Push);
+
+}
+
 
 void ABBCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {

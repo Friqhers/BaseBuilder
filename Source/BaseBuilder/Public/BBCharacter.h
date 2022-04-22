@@ -69,6 +69,9 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 public:
+
+	bool bIsCrouchJumped = false;
+	
 	/* Is character currently performing a jump action. Resets on landed.  */
 	UPROPERTY(Transient, Replicated)
 	bool bIsJumping;
@@ -82,6 +85,13 @@ public:
 	void ServerSetIsJumping(bool NewJumping);
 
 	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode = 0) override;
+
+	virtual void OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
+	virtual void OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
+
+	UFUNCTION(Reliable, Server, WithValidation)
+	void ServerCrouchJump();
+
 protected:
 	FTimerHandle TimerHandle_FinishJump;
 
@@ -93,6 +103,9 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Character Options")
 	float TimeBetweenJumps = 0.67f;
+
+	float crouchHalfHeight;
+	float capsuleHalfHeight;
 
 
 };
