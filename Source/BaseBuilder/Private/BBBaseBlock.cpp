@@ -2,9 +2,10 @@
 
 
 #include "BBBaseBlock.h"
-
 #include "BBCharacter.h"
+#include "Camera/CameraComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 ABBBaseBlock::ABBBaseBlock()
@@ -29,7 +30,9 @@ void ABBBaseBlock::BeginPlay()
 void ABBBaseBlock::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
+
+
+	//@TODO: fix this, working but laggy on client
 	if(HasAuthority())
 	{
 		if(BlockIsActive && OwnerCharacter)
@@ -37,6 +40,33 @@ void ABBBaseBlock::Tick(float DeltaTime)
 			UpdatePosition();
 		}
 	}
+
+	// if(BlockIsActive && OwnerCharacter)
+	// {
+	// 	UpdatePosition();
+	//
+	// 	if(HasAuthority() == false)
+	// 	{
+	// 		ServerUpdatePosition();
+	// 	}
+	// }
+
+	
+	// else
+	// {
+	// 	if(BlockIsActive && OwnerCharacter)
+	// 	{
+	// 		FVector eyeLocation;
+	// 		FRotator eyeRotation;
+	// 		OwnerCharacter->GetActorEyesViewPoint(eyeLocation, eyeRotation);
+	//
+	// 		FVector direction = eyeRotation.Vector();
+	// 		FVector blockTeleportPosition = eyeLocation + (direction * OwnerCharacter->distanceBetween);
+	//
+	// 		SetActorLocation(FMath::VInterpTo(GetActorLocation(), blockTeleportPosition, DeltaTime, 50));
+	// 		ServerUpdatePosition_Implementation(GetActorLocation(), blockTeleportPosition);
+	// 	}
+	// }
 }
 
 void ABBBaseBlock::UpdatePosition()
@@ -49,12 +79,17 @@ void ABBBaseBlock::UpdatePosition()
 	FVector blockTeleportPosition = eyeLocation + (direction * OwnerCharacter->distanceBetween);
 
 	SetActorLocation(blockTeleportPosition);
-
 }
+
+void ABBBaseBlock::ServerUpdatePosition_Implementation()
+{
+	UpdatePosition();
+}
+
 
 void ABBBaseBlock::OnRep_CollisionEnabled()
 {
-	SetActorEnableCollision(collisionEnabled);
+	
 }
 
 void ABBBaseBlock::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

@@ -18,11 +18,11 @@ public:
 	// Sets default values for this character's properties
 	ABBCharacter();
 
-protected:
+
 
 	UPROPERTY(VisibleanyWhere, BlueprintReadOnly, Category = "Components")
 	UCameraComponent* CameraComp;
-	
+protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
@@ -56,7 +56,7 @@ protected:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerPush();
 public:
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(Replicated, BlueprintReadOnly)
 	int distanceBetween;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Options")
@@ -92,6 +92,7 @@ public:
 	UFUNCTION(Reliable, Server, WithValidation)
 	void ServerCrouchJump();
 
+	
 protected:
 	FTimerHandle TimerHandle_FinishJump;
 

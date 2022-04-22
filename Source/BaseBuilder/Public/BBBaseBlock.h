@@ -27,6 +27,8 @@ protected:
 	
 	void UpdatePosition();
 
+	UFUNCTION(Reliable, Server)
+	void ServerUpdatePosition();
 	
 
 public:	

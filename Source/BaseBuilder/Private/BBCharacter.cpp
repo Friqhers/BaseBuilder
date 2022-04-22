@@ -113,7 +113,7 @@ void ABBCharacter::BeginCrouch()
 		float cameraHeight = CameraComp->GetRelativeLocation().Z;
 		float zOffset = (cameraHeight) - crouchHalfHeight;
 		AddActorWorldOffset(FVector(0, 0, zOffset));
-
+		SetIsJumping(false);
 		if(!HasAuthority())
 		{
 			ServerCrouchJump();
@@ -339,5 +339,6 @@ void ABBCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ABBCharacter, bIsJumping);
+	DOREPLIFETIME(ABBCharacter, distanceBetween);
 }
 
