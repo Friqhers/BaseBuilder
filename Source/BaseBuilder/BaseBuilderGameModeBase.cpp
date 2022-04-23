@@ -3,3 +3,8 @@
 
 #include "BaseBuilderGameModeBase.h"
 
+void ABaseBuilderGameModeBase::BeginPlay()
+{
+	Super::BeginPlay();
+	
+}

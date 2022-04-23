@@ -13,5 +13,7 @@ UCLASS()
 class BASEBUILDER_API ABaseBuilderGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
-	
+
+public:
+	virtual void BeginPlay() override;
 };

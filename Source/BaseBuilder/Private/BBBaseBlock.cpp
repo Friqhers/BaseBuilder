@@ -16,7 +16,8 @@ ABBBaseBlock::ABBBaseBlock()
 	BaseBlockMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	RootComponent = BaseBlockMesh;
 
-	SetReplicates(true);
+	//SetReplicates(true);
+	bReplicates = true;
 }
 
 // Called when the game starts or when spawned
@@ -66,23 +67,6 @@ void ABBBaseBlock::Tick(float DeltaTime)
 
 		lastPosition = GetActorLocation();
 	}
-
-	
-	// else
-	// {
-	// 	if(BlockIsActive && OwnerCharacter)
-	// 	{
-	// 		FVector eyeLocation;
-	// 		FRotator eyeRotation;
-	// 		OwnerCharacter->GetActorEyesViewPoint(eyeLocation, eyeRotation);
-	//
-	// 		FVector direction = eyeRotation.Vector();
-	// 		FVector blockTeleportPosition = eyeLocation + (direction * OwnerCharacter->distanceBetween);
-	//
-	// 		SetActorLocation(FMath::VInterpTo(GetActorLocation(), blockTeleportPosition, DeltaTime, 50));
-	// 		ServerUpdatePosition_Implementation(GetActorLocation(), blockTeleportPosition);
-	// 	}
-	// }
 }
 
 void ABBBaseBlock::UpdatePosition()
