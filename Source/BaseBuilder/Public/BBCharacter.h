@@ -110,7 +110,5 @@ protected:
 
 	float crouchHalfHeight;
 	float capsuleHalfHeight;
-
-
 };
 

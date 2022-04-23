@@ -186,6 +186,11 @@ void ABBCharacter::Pickup()
 		ABBBaseBlock* BaseBlock = Cast<ABBBaseBlock>(HitResult.GetActor());
 		if(BaseBlock)
 		{
+			if(BaseBlock->BlockIsActive || BaseBlock->OwnerCharacter)
+			{
+				return;
+			}
+			
 			BaseBlock->SetActorEnableCollision(false);
 			BaseBlock->collisionEnabled = false;
 			

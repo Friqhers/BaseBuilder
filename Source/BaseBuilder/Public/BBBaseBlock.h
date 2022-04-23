@@ -30,7 +30,7 @@ protected:
 	UFUNCTION(Reliable, Server)
 	void ServerUpdatePosition();
 	
-
+	FVector lastPosition;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -45,6 +45,9 @@ public:
 public:
 	UPROPERTY(ReplicatedUsing=OnRep_collisionEnabled)
 	bool collisionEnabled = true;
+
+	UPROPERTY(Replicated, BlueprintReadOnly)
+	FVector blockTeleportPosition;
 protected:
 	UFUNCTION()
 	void OnRep_CollisionEnabled();

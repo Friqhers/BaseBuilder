@@ -24,6 +24,7 @@ void ABBBaseBlock::BeginPlay()
 {
 	Super::BeginPlay();
 	SetReplicateMovement(true);
+	lastPosition = GetActorLocation();
 }
 
 // Called every frame
@@ -33,23 +34,38 @@ void ABBBaseBlock::Tick(float DeltaTime)
 
 
 	//@TODO: fix this, working but laggy on client
-	if(HasAuthority())
-	{
-		if(BlockIsActive && OwnerCharacter)
-		{
-			UpdatePosition();
-		}
-	}
-
-	// if(BlockIsActive && OwnerCharacter)
+	// if(HasAuthority())
 	// {
-	// 	UpdatePosition();
-	//
-	// 	if(HasAuthority() == false)
+	// 	if(BlockIsActive && OwnerCharacter)
 	// 	{
-	// 		ServerUpdatePosition();
+	// 		UpdatePosition();
 	// 	}
 	// }
+	
+	if(BlockIsActive && OwnerCharacter)
+	{
+		if(HasAuthority())
+		{
+			//Cast<APlayerController>(OwnerCharacter->Controller)->SmoothTargetViewRotation(OwnerCharacter, DeltaTime);
+			UpdatePosition();
+		}
+		else
+		{
+			if(OwnerCharacter->IsLocallyControlled())
+			{
+				UpdatePosition();
+			}
+			else
+			{
+				
+				SetActorLocation(FMath::VInterpTo(lastPosition, blockTeleportPosition, DeltaTime, 10));
+			}
+			//ServerUpdatePosition();
+			
+		}
+
+		lastPosition = GetActorLocation();
+	}
 
 	
 	// else
@@ -74,11 +90,15 @@ void ABBBaseBlock::UpdatePosition()
 	FVector eyeLocation;
 	FRotator eyeRotation;
 	OwnerCharacter->GetActorEyesViewPoint(eyeLocation, eyeRotation);
+	FVector direction;
 
-	FVector direction = eyeRotation.Vector();
-	FVector blockTeleportPosition = eyeLocation + (direction * OwnerCharacter->distanceBetween);
+	direction= eyeRotation.Vector();
+	
+	FVector currentLocation = GetActorLocation();
 
-	SetActorLocation(blockTeleportPosition - OwnerCharacter->blockOffset);
+	blockTeleportPosition = (eyeLocation + (direction * OwnerCharacter->distanceBetween)) - OwnerCharacter->blockOffset;
+
+	SetActorLocation(blockTeleportPosition);
 }
 
 void ABBBaseBlock::ServerUpdatePosition_Implementation()
@@ -89,7 +109,7 @@ void ABBBaseBlock::ServerUpdatePosition_Implementation()
 
 void ABBBaseBlock::OnRep_CollisionEnabled()
 {
-	
+	SetActorEnableCollision(collisionEnabled);
 }
 
 void ABBBaseBlock::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -99,4 +119,5 @@ void ABBBaseBlock::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 	DOREPLIFETIME(ABBBaseBlock, BlockIsActive);
 	DOREPLIFETIME(ABBBaseBlock, OwnerCharacter);
 	DOREPLIFETIME(ABBBaseBlock,collisionEnabled);
+	DOREPLIFETIME(ABBBaseBlock, blockTeleportPosition);
 }
