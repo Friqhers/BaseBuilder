@@ -78,7 +78,7 @@ void ABBBaseBlock::UpdatePosition()
 	FVector direction = eyeRotation.Vector();
 	FVector blockTeleportPosition = eyeLocation + (direction * OwnerCharacter->distanceBetween);
 
-	SetActorLocation(blockTeleportPosition);
+	SetActorLocation(blockTeleportPosition - OwnerCharacter->blockOffset);
 }
 
 void ABBBaseBlock::ServerUpdatePosition_Implementation()

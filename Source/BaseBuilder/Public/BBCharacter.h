@@ -44,7 +44,7 @@ protected:
 
 	ABBBaseBlock* CurrentBaseBlock = nullptr;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Character Options")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Options")
 	int BlocPickupDistance = 1000;
 
 	void Pull();
@@ -58,6 +58,9 @@ protected:
 public:
 	UPROPERTY(Replicated, BlueprintReadOnly)
 	int distanceBetween;
+
+	UPROPERTY(Replicated, BlueprintReadOnly)
+	FVector blockOffset;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Options")
 	int pullPushPower = 10;

@@ -194,7 +194,9 @@ void ABBCharacter::Pickup()
 
 			CurrentBaseBlock = BaseBlock;
 
-			distanceBetween = FVector::Distance(EyeLocation, HitResult.GetActor()->GetActorLocation());
+			//distanceBetween = FVector::Distance(EyeLocation, HitResult.GetActor()->GetActorLocation());
+			distanceBetween = FVector::Distance(EyeLocation, HitResult.ImpactPoint);
+			blockOffset = HitResult.ImpactPoint - HitResult.GetActor()->GetActorLocation();
 			
 			//FVector blockTeleportPosition = EyeLocation + (direction * BaseBlock->defaultDistanceBetween);
 			//BaseBlock->SetActorLocation(blockTeleportPosition);
@@ -253,7 +255,10 @@ void ABBCharacter::SetIsJumping(bool NewJumping)
 {
 	if(bIsCrouched && NewJumping)
 	{
-		LaunchCharacter(FVector(0,0,420), true, true);
+		if(!GetCharacterMovement()->IsFalling())
+		{
+			LaunchCharacter(FVector(0,0,420), true, true);
+		}
 	}
 	else if(NewJumping != bIsJumping)
 	{
@@ -340,5 +345,6 @@ void ABBCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 
 	DOREPLIFETIME(ABBCharacter, bIsJumping);
 	DOREPLIFETIME(ABBCharacter, distanceBetween);
+	DOREPLIFETIME(ABBCharacter, blockOffset);
 }
 
