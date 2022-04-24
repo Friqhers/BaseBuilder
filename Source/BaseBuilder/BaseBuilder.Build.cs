@@ -8,7 +8,7 @@ public class BaseBuilder : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "NavigationSystem","PhysicsCore" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "NavigationSystem","PhysicsCore", "OnlineSubsystem", "OnlineSubsystemSteam" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

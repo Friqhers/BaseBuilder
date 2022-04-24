@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "BBCharacter.generated.h"
 
+
 class ABBBaseBlock;
 class UCameraComponent;
 

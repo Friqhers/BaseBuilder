@@ -1,0 +1,13 @@
+/NOLOGO
+/errorReport:prompt
+/MACHINE:x64
+/SUBSYSTEM:WINDOWS
+/DEF
+/NAME:"UnrealEditor-OnlineSubsystemSteam-Win64-DebugGame.dll"
+/IGNORE:4221
+/NODEFAULTLIB
+"E:\Unreal Engine 5\UE5 Projects\BaseBuilder\Intermediate\Build\Win64\BaseBuilderEditor\DebugGame\Engine\SharedPCH.Engine.NonOptimized.ShadowErrors.h.obj"
+"E:\Unreal Engine 5\UE5 Projects\BaseBuilder\Plugins\Online\OnlineSubsystemSteam\Intermediate\Build\Win64\UnrealEditor\DebugGame\OnlineSubsystemSteam\Module.OnlineSubsystemSteam.cpp.obj"
+"E:\Unreal Engine 5\UE5 Projects\BaseBuilder\Plugins\Online\OnlineSubsystemSteam\Intermediate\Build\Win64\UnrealEditor\DebugGame\OnlineSubsystemSteam\Module.OnlineSubsystemSteam.gen.cpp.obj"
+"E:\Unreal Engine 5\UE5 Projects\BaseBuilder\Plugins\Online\OnlineSubsystemSteam\Intermediate\Build\Win64\UnrealEditor\DebugGame\OnlineSubsystemSteam\Default.rc2.res"
+/OUT:"E:\Unreal Engine 5\UE5 Projects\BaseBuilder\Plugins\Online\OnlineSubsystemSteam\Intermediate\Build\Win64\UnrealEditor\DebugGame\OnlineSubsystemSteam\UnrealEditor-OnlineSubsystemSteam-Win64-DebugGame.lib"
