@@ -45,6 +45,7 @@ void ABBBaseBlock::Tick(float DeltaTime)
 	
 	if(BlockIsActive && OwnerCharacter)
 	{
+		
 		if(HasAuthority())
 		{
 			//Cast<APlayerController>(OwnerCharacter->Controller)->SmoothTargetViewRotation(OwnerCharacter, DeltaTime);
@@ -66,6 +67,24 @@ void ABBBaseBlock::Tick(float DeltaTime)
 		}
 
 		lastPosition = GetActorLocation();
+	}
+}
+
+void ABBBaseBlock::Lock(ABBCharacter* ownerPlayer)
+{
+	if(ownerPlayer)
+	{
+		OwnerCharacter = ownerPlayer;
+		BlockIsLockedToOwner = true;
+	}
+}
+
+void ABBBaseBlock::Unlock()
+{
+	if(BlockIsLockedToOwner)
+	{
+		BlockIsLockedToOwner = false;
+		OwnerCharacter = nullptr;
 	}
 }
 
@@ -102,4 +121,5 @@ void ABBBaseBlock::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 	DOREPLIFETIME(ABBBaseBlock, OwnerCharacter);
 	DOREPLIFETIME(ABBBaseBlock,collisionEnabled);
 	DOREPLIFETIME(ABBBaseBlock, blockTeleportPosition);
+	DOREPLIFETIME(ABBBaseBlock, BlockIsLockedToOwner);
 }
