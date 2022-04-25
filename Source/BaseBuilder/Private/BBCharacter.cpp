@@ -26,7 +26,10 @@ ABBCharacter::ABBCharacter()
 void ABBCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	if(HasAuthority() && blockColor == FLinearColor(0,0,0))
+	{
+		blockColor = FLinearColor::MakeRandomColor();
+	}
 }
 
 void ABBCharacter::Pull()
@@ -232,6 +235,8 @@ void ABBCharacter::Pickup()
 	FRotator EyeRotation;
 	GetActorEyesViewPoint(EyeLocation,EyeRotation);
 
+	EyeLocation = CameraComp->GetComponentLocation();
+	
 	FVector direction = EyeRotation.Vector();
 	FVector traceEnd = EyeLocation + (direction * BlocPickupDistance);
 
@@ -262,9 +267,16 @@ void ABBCharacter::Pickup()
 			BaseBlock->SetActorEnableCollision(false);
 			BaseBlock->collisionEnabled = false;
 			
-			BaseBlock->BlockIsActive = true;
+			
 			BaseBlock->OwnerCharacter = this;
 
+			if(HasAuthority())
+			{
+				BaseBlock->BlockIsActive = true;
+				BaseBlock->OnRep_BlockIsActive();
+			}
+
+			
 			CurrentBaseBlock = BaseBlock;
 
 			//distanceBetween = FVector::Distance(EyeLocation, HitResult.GetActor()->GetActorLocation());
@@ -273,7 +285,6 @@ void ABBCharacter::Pickup()
 			
 			//FVector blockTeleportPosition = EyeLocation + (direction * BaseBlock->defaultDistanceBetween);
 			//BaseBlock->SetActorLocation(blockTeleportPosition);
-			
 		}
 	}
 	else
@@ -299,11 +310,17 @@ void ABBCharacter::Drop()
 		ServerDrop();
 	}
 	
-	if(CurrentBaseBlock)
+	if(CurrentBaseBlock && CurrentBaseBlock->OwnerCharacter == this)
 	{
 		CurrentBaseBlock->SetActorEnableCollision(true);
 		CurrentBaseBlock->collisionEnabled = true;
-		CurrentBaseBlock->BlockIsActive = false;
+		
+
+		if(HasAuthority())
+		{
+			CurrentBaseBlock->BlockIsActive = false;
+			CurrentBaseBlock->OnRep_BlockIsActive();
+		}
 		
 		//if block is not locked, reset the owner
 		if(!CurrentBaseBlock->BlockIsLockedToOwner)
@@ -311,7 +328,7 @@ void ABBCharacter::Drop()
 			CurrentBaseBlock->OwnerCharacter = nullptr;
 		}
 		
-		CurrentBaseBlock = nullptr;
+		CurrentBaseBlock = nullptr;		
 	}
 }
 
@@ -426,5 +443,6 @@ void ABBCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 	DOREPLIFETIME(ABBCharacter, bIsJumping);
 	DOREPLIFETIME(ABBCharacter, distanceBetween);
 	DOREPLIFETIME(ABBCharacter, blockOffset);
+	DOREPLIFETIME(ABBCharacter, blockColor);
 }
 

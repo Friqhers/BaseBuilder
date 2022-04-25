@@ -10,6 +10,17 @@
 class ABBBaseBlock;
 class UCameraComponent;
 
+
+// static FLinearColor colors[32] =
+// {
+// 	FLinearColor::Blue,
+// 	FLinearColor::Green,
+// 	FLinearColor::Red,
+// 	FLinearColor::Yellow,
+// 	FLinearColor::
+// };
+
+
 UCLASS()
 class BASEBUILDER_API ABBCharacter : public ACharacter
 {
@@ -18,9 +29,7 @@ class BASEBUILDER_API ABBCharacter : public ACharacter
 public:
 	// Sets default values for this character's properties
 	ABBCharacter();
-
-
-
+	
 	UPROPERTY(VisibleanyWhere, BlueprintReadOnly, Category = "Components")
 	UCameraComponent* CameraComp;
 protected:
@@ -42,12 +51,7 @@ protected:
 	
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerDrop();
-
-	ABBBaseBlock* CurrentBaseBlock = nullptr;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Options")
-	int BlocPickupDistance = 1000;
-
 	/// Pull and Push functions
 	void Pull();
 	void Push();
@@ -57,14 +61,22 @@ protected:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerPush();
 	
-
 	//Block lock and unlock functions
 	void ToggleBlockLock();
 	
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerToggleBlockLock();
 
+	UPROPERTY()
+	ABBBaseBlock* CurrentBaseBlock = nullptr;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Options")
+	int BlocPickupDistance = 1000;
+
 public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Options", Replicated)
+	FLinearColor blockColor = FLinearColor(0,0,0);
+	
 	UPROPERTY(Replicated, BlueprintReadOnly)
 	int distanceBetween;
 
@@ -80,8 +92,7 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-public:
-
+	
 	bool bIsCrouchJumped = false;
 	
 	/* Is character currently performing a jump action. Resets on landed.  */
@@ -104,7 +115,6 @@ public:
 	UFUNCTION(Reliable, Server, WithValidation)
 	void ServerCrouchJump();
 
-	
 protected:
 	FTimerHandle TimerHandle_FinishJump;
 
