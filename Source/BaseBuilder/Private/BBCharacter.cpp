@@ -62,6 +62,7 @@ void ABBCharacter::Push()
 	}	
 }
 
+
 void ABBCharacter::ServerPush_Implementation()
 {
 	Push();
@@ -81,6 +82,66 @@ bool ABBCharacter::ServerPull_Validate()
 {
 	return true;
 }
+
+void ABBCharacter::ToggleBlockLock()
+{
+	if(!HasAuthority())
+	{
+		ServerToggleBlockLock();
+	}
+	
+	FHitResult HitResult;
+	FVector EyeLocation;
+	FRotator EyeRotation;
+	GetActorEyesViewPoint(EyeLocation,EyeRotation);
+
+	FVector direction = EyeRotation.Vector();
+	FVector traceEnd = EyeLocation + (direction * BlocPickupDistance);
+
+
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+	QueryParams.bTraceComplex = true;
+	
+	if(GetWorld()->LineTraceSingleByChannel(HitResult, EyeLocation, traceEnd, ECollisionChannel::ECC_Visibility,QueryParams))
+	{
+		ABBBaseBlock* BaseBlock = Cast<ABBBaseBlock>(HitResult.GetActor());
+		if(BaseBlock)
+		{
+			if(!BaseBlock->BlockIsActive)
+			{
+				if(BaseBlock->BlockIsLockedToOwner)
+				{
+					//unlock
+					if(BaseBlock->OwnerCharacter == this)
+					{
+						BaseBlock->Unlock();
+					}
+				}
+				else if(BaseBlock->BlockIsLockedToOwner == false)
+				{	
+					//lock
+					if(BaseBlock->OwnerCharacter == nullptr)
+					{
+						BaseBlock->Lock(this);
+					}
+				}
+			}
+		}
+	}
+}
+
+
+void ABBCharacter::ServerToggleBlockLock_Implementation()
+{
+	ToggleBlockLock();
+}
+
+bool ABBCharacter::ServerToggleBlockLock_Validate()
+{
+	return true;
+}
+
 
 // Called every frame
 void ABBCharacter::Tick(float DeltaTime)
@@ -186,7 +247,14 @@ void ABBCharacter::Pickup()
 		ABBBaseBlock* BaseBlock = Cast<ABBBaseBlock>(HitResult.GetActor());
 		if(BaseBlock)
 		{
-			if(BaseBlock->BlockIsActive || BaseBlock->OwnerCharacter)
+			//if block is already in move
+			if(BaseBlock->BlockIsActive)
+			{
+				return;
+			}
+			
+			//if we try to move someone else's block just return;
+			if(BaseBlock->BlockIsLockedToOwner && BaseBlock->OwnerCharacter != this)
 			{
 				return;
 			}
@@ -236,7 +304,13 @@ void ABBCharacter::Drop()
 		CurrentBaseBlock->SetActorEnableCollision(true);
 		CurrentBaseBlock->collisionEnabled = true;
 		CurrentBaseBlock->BlockIsActive = false;
-		CurrentBaseBlock->OwnerCharacter = nullptr;
+		
+		//if block is not locked, reset the owner
+		if(!CurrentBaseBlock->BlockIsLockedToOwner)
+		{
+			CurrentBaseBlock->OwnerCharacter = nullptr;
+		}
+		
 		CurrentBaseBlock = nullptr;
 	}
 }
@@ -341,6 +415,7 @@ void ABBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	PlayerInputComponent->BindAction("Pull", IE_Pressed, this, &ABBCharacter::Pull);
 	PlayerInputComponent->BindAction("Push", IE_Pressed, this, &ABBCharacter::Push);
 
+	PlayerInputComponent->BindAction("ToggleBlockLock", IE_Pressed, this, &ABBCharacter::ToggleBlockLock);
 }
 
 

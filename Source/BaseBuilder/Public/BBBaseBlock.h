@@ -24,12 +24,12 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
 	UStaticMeshComponent* BaseBlockMesh;
 	
+	FVector lastPosition;
+	
 	void UpdatePosition();
 
 	UFUNCTION(Reliable, Server)
 	void ServerUpdatePosition();
-	
-	FVector lastPosition;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -38,16 +38,22 @@ public:
 	bool BlockIsActive = false;
 
 	UPROPERTY(BlueprintReadWrite, Category = "BaseBlock", Replicated)
-	ABBCharacter* OwnerCharacter = nullptr; //@TODO: dont forget this
-
+	ABBCharacter* OwnerCharacter = nullptr;
 	
-public:
 	UPROPERTY(ReplicatedUsing=OnRep_collisionEnabled)
 	bool collisionEnabled = true;
 
 	UPROPERTY(Replicated, BlueprintReadOnly)
 	FVector blockTeleportPosition;
+
+	UPROPERTY(Replicated)
+	bool BlockIsLockedToOwner = false;
+	
+	void Lock(ABBCharacter* ownerPlayer);
+	void Unlock();
+	
 protected:
 	UFUNCTION()
 	void OnRep_CollisionEnabled();
+	
 };

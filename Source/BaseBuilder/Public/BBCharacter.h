@@ -48,14 +48,22 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Options")
 	int BlocPickupDistance = 1000;
 
+	/// Pull and Push functions
 	void Pull();
 	void Push();
-
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerPull();
 	
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerPush();
+	
+
+	//Block lock and unlock functions
+	void ToggleBlockLock();
+	
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerToggleBlockLock();
+
 public:
 	UPROPERTY(Replicated, BlueprintReadOnly)
 	int distanceBetween;
