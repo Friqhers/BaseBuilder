@@ -2,10 +2,10 @@
 
 
 #include "BBBaseBlock.h"
-#include "BBCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "BBCharacter.h"
 
 // Sets default values
 ABBBaseBlock::ABBBaseBlock()
@@ -78,8 +78,6 @@ void ABBBaseBlock::UpdatePosition()
 
 	direction= eyeRotation.Vector();
 	
-	FVector currentLocation = GetActorLocation();
-
 	blockTeleportPosition = (eyeLocation + (direction * OwnerCharacter->distanceBetween)) - OwnerCharacter->blockOffset;
 
 	SetActorLocation(blockTeleportPosition);

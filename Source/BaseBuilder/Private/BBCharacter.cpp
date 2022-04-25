@@ -111,7 +111,7 @@ void ABBCharacter::BeginCrouch()
 		//CameraComp->AddRelativeLocation(FVector(0,0,halfHeight));
 
 		float cameraHeight = CameraComp->GetRelativeLocation().Z;
-		float zOffset = (cameraHeight) - crouchHalfHeight;
+		float zOffset = (capsuleHalfHeight) - crouchHalfHeight;
 		AddActorWorldOffset(FVector(0, 0, zOffset));
 		SetIsJumping(false);
 		if(!HasAuthority())

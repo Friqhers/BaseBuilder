@@ -8,7 +8,6 @@
 
 class ABBCharacter;
 
-
 UCLASS()
 class BASEBUILDER_API ABBBaseBlock : public AActor
 {
@@ -39,7 +38,7 @@ public:
 	bool BlockIsActive = false;
 
 	UPROPERTY(BlueprintReadWrite, Category = "BaseBlock", Replicated)
-	ABBCharacter* OwnerCharacter = nullptr;
+	ABBCharacter* OwnerCharacter = nullptr; //@TODO: dont forget this
 
 	
 public:
