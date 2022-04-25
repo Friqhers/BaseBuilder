@@ -23,6 +23,12 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
 	UStaticMeshComponent* BaseBlockMesh;
+
+	UPROPERTY(EditAnywhere, Category = "Visual Effects")
+	UMaterialInterface* Material;
+	
+	UPROPERTY(BlueprintReadWrite)
+	UMaterialInstanceDynamic* DynamicMaterial;
 	
 	FVector lastPosition;
 	
@@ -34,7 +40,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(BlueprintReadWrite, Category = "BaseBlock", Replicated)
+	UPROPERTY(ReplicatedUsing = OnRep_BlockIsActive)
 	bool BlockIsActive = false;
 
 	UPROPERTY(BlueprintReadWrite, Category = "BaseBlock", Replicated)
@@ -46,8 +52,14 @@ public:
 	UPROPERTY(Replicated, BlueprintReadOnly)
 	FVector blockTeleportPosition;
 
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing = OnRep_BlockLockChanges)
 	bool BlockIsLockedToOwner = false;
+
+	UFUNCTION()
+	void OnRep_BlockLockChanges();
+
+	UFUNCTION()
+	void OnRep_BlockIsActive();
 	
 	void Lock(ABBCharacter* ownerPlayer);
 	void Unlock();

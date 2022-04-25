@@ -26,6 +26,8 @@ void ABBBaseBlock::BeginPlay()
 	Super::BeginPlay();
 	SetReplicateMovement(true);
 	lastPosition = GetActorLocation();
+
+	DynamicMaterial = UMaterialInstanceDynamic::Create(Material, this);
 }
 
 // Called every frame
@@ -76,6 +78,10 @@ void ABBBaseBlock::Lock(ABBCharacter* ownerPlayer)
 	{
 		OwnerCharacter = ownerPlayer;
 		BlockIsLockedToOwner = true;
+
+		//set paramater with Set***ParamaterValue
+		DynamicMaterial->SetVectorParameterValue("Color", OwnerCharacter->blockColor);
+		BaseBlockMesh->SetMaterial(0, DynamicMaterial);
 	}
 }
 
@@ -85,8 +91,41 @@ void ABBBaseBlock::Unlock()
 	{
 		BlockIsLockedToOwner = false;
 		OwnerCharacter = nullptr;
+
+		//set paramater with Set***ParamaterValue
+		DynamicMaterial->SetVectorParameterValue("Color", FVector(0.082353, 0.07451, 0.07451));
+		BaseBlockMesh->SetMaterial(0, DynamicMaterial);
 	}
 }
+
+void ABBBaseBlock::OnRep_BlockLockChanges()
+{
+	if(BlockIsLockedToOwner)
+	{
+		DynamicMaterial->SetVectorParameterValue("Color", OwnerCharacter->blockColor);
+		BaseBlockMesh->SetMaterial(0, DynamicMaterial);
+	}
+	else
+	{
+		DynamicMaterial->SetVectorParameterValue("Color", FVector(0.082353, 0.07451, 0.07451));
+		BaseBlockMesh->SetMaterial(0, DynamicMaterial);
+	}
+}
+
+void ABBBaseBlock::OnRep_BlockIsActive()
+{
+	if(BlockIsActive)
+	{
+		DynamicMaterial->SetScalarParameterValue("Opacity", 0.5f);
+		BaseBlockMesh->SetMaterial(0, DynamicMaterial);
+	}
+	else
+	{
+		DynamicMaterial->SetScalarParameterValue("Opacity", 1.0f);
+		BaseBlockMesh->SetMaterial(0, DynamicMaterial);
+	}
+}
+
 
 void ABBBaseBlock::UpdatePosition()
 {
@@ -119,7 +158,7 @@ void ABBBaseBlock::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 
 	DOREPLIFETIME(ABBBaseBlock, BlockIsActive);
 	DOREPLIFETIME(ABBBaseBlock, OwnerCharacter);
-	DOREPLIFETIME(ABBBaseBlock,collisionEnabled);
+	DOREPLIFETIME(ABBBaseBlock, collisionEnabled);
 	DOREPLIFETIME(ABBBaseBlock, blockTeleportPosition);
 	DOREPLIFETIME(ABBBaseBlock, BlockIsLockedToOwner);
 }
