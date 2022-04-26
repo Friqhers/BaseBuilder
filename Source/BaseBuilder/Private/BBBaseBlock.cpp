@@ -116,11 +116,13 @@ void ABBBaseBlock::OnRep_BlockIsActive()
 {
 	if(BlockIsActive)
 	{
+		//DynamicMaterial->BlendMode = EBlendMode::BLEND_Translucent;
 		DynamicMaterial->SetScalarParameterValue("Opacity", 0.5f);
 		BaseBlockMesh->SetMaterial(0, DynamicMaterial);
 	}
 	else
 	{
+		//DynamicMaterial->BlendMode = EBlendMode::BLEND_Opaque;
 		DynamicMaterial->SetScalarParameterValue("Opacity", 1.0f);
 		BaseBlockMesh->SetMaterial(0, DynamicMaterial);
 	}

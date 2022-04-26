@@ -9,6 +9,8 @@
 #include "GameFramework\CharacterMovementComponent.h"
 #include "Camera/CameraComponent.h"
 
+
+
 // Sets default values
 ABBCharacter::ABBCharacter()
 {
@@ -16,7 +18,7 @@ ABBCharacter::ABBCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 	CameraComp->SetupAttachment(RootComponent);
-
+	
 	crouchHalfHeight = GetCharacterMovement()->GetCrouchedHalfHeight();
 	capsuleHalfHeight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
 
@@ -62,7 +64,7 @@ void ABBCharacter::Push()
 			ServerPush();
 		}
 
-	}	
+	}
 }
 
 
