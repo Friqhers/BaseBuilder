@@ -28,6 +28,23 @@ ABBCharacter::ABBCharacter()
 void ABBCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if(!DynamicMaterial)
+	{
+		DynamicMaterial = UMaterialInstanceDynamic::Create(Material, this);
+		GetMesh()->SetMaterial(0, DynamicMaterial);
+
+		if(BBCharacterType == EBBCharacterType::BaseAttacker)
+		{
+			DynamicMaterial->SetVectorParameterValue("BodyColor", FLinearColor(1, 0.144553, 0)); 
+		}
+		else
+		{
+			DynamicMaterial->SetVectorParameterValue("BodyColor", FLinearColor(0.263795, 0, 1));
+		}
+	}
+	
+	
 	if(HasAuthority() && blockColor == FLinearColor(0,0,0))
 	{
 		blockColor = FLinearColor::MakeRandomColor();
@@ -152,6 +169,24 @@ bool ABBCharacter::ServerToggleBlockLock_Validate()
 	return true;
 }
 
+
+// void ABBCharacter::OnRep_BBCharacterType()
+// {
+// 	if(!DynamicMaterial)
+// 	{
+// 		UE_LOG(LogTemp, Error, TEXT("DynamicMaterial is null for: %s"), *GetName());
+// 		return;
+// 	}
+// 	
+// 	if(BBCharacterType == EBBCharacterType::BaseAttacker)
+// 	{
+// 		DynamicMaterial->SetVectorParameterValue("BodyColor", FLinearColor(1, 0.144553, 0)); 
+// 	}
+// 	else
+// 	{
+// 		DynamicMaterial->SetVectorParameterValue("BodyColor", FLinearColor(0.263795, 0, 1));
+// 	}
+// }
 
 void ABBCharacter::SetBBCharacterType(EBBCharacterType CharacterType)
 {
@@ -472,5 +507,6 @@ void ABBCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 	DOREPLIFETIME(ABBCharacter, blockColor);
 	DOREPLIFETIME(ABBCharacter, bCanMoveBlocks);
 	DOREPLIFETIME(ABBCharacter, bCanLockBlocks);
+	DOREPLIFETIME(ABBCharacter, BBCharacterType);
 }
 

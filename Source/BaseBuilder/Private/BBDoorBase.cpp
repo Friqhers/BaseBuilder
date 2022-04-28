@@ -53,8 +53,6 @@ void ABBDoorBase::CheckBeforeOpening()
 		GetWorldTimerManager().SetTimer(TimerHandle_WaitBeforeOpen, this, &ABBDoorBase::CheckBeforeOpening, CloseTime, false);
 
 	}
-
-
 }
 
 void ABBDoorBase::CheckBeforeClosing()

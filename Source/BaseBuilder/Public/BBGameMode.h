@@ -70,7 +70,9 @@ public:
 	int GetCurrentPlayerCount();
 
 	bool GetAnyBaseBuilderAlive();
-
+	
+	/***************/
+	//Game flow logic funcs.
 	void StartNewRound();
 	void ChangeToBaseClimbingState();
 	void ChangeToBaseDefendingState();
@@ -79,6 +81,13 @@ public:
 	void ChaneToBaseAttackersVictory();
 	void RestartRound();
 	void SwapTeams();
+	/***************/
+
+	
+	//sets default base builder char. options
+	void SetBaseBuilderCharacterOptions(ABBCharacter* targetCharacter);
+	//sets default base attacker char. options
+	void SetBaseAttackerCharacterOptions(ABBCharacter* targetCharacter);
 
 	int waitedTime;
 	void UpdateRemainingSecondsTimer();

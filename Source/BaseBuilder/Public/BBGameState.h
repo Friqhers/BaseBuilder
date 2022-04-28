@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BBCharacter.h"
 #include "GameFramework/GameState.h"
 #include "BBGameState.generated.h"
 
@@ -33,6 +34,7 @@ public:
 	EBBGameState GetGameState();
 
 	void SetRemainingSecondsForCurrentState(float newSeconds);
+
 	
 protected:
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = "GameState")
@@ -46,4 +48,5 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "GameState")
 	void BBGameStateChanged(EBBGameState NewState, EBBGameState OldState);
+	
 };

@@ -191,9 +191,7 @@ void ABBGameMode::StartNewRound()
 		if(baseBuilderCharacter)
 		{
 			baseBuilderCharacter->TeleportTo(spawnPos, spawnRot);
-			baseBuilderCharacter->BBCharacterType = EBBCharacterType::BaseBuilder;
-			baseBuilderCharacter->bCanMoveBlocks = true;
-			baseBuilderCharacter->bCanLockBlocks = true;
+			SetBaseBuilderCharacterOptions(baseBuilderCharacter);
 			continue;
 		}
 
@@ -205,9 +203,7 @@ void ABBGameMode::StartNewRound()
 		ABBCharacter* CharacterToPosses = GetWorld()->SpawnActor<ABBCharacter>(CharacterClass, spawnPos, spawnRot, SpawnParameters);
 		if(CharacterToPosses)
 		{
-			CharacterToPosses->BBCharacterType = EBBCharacterType::BaseBuilder;
-			CharacterToPosses->bCanMoveBlocks = true;
-			CharacterToPosses->bCanLockBlocks = true;
+			SetBaseBuilderCharacterOptions(CharacterToPosses);
 			baseBuilderController->Possess(CharacterToPosses);
 		}
 	}
@@ -225,9 +221,7 @@ void ABBGameMode::StartNewRound()
 		if(baseAttackerCharacter)
 		{
 			baseAttackerCharacter->TeleportTo(spawnPos, spawnRot);
-			baseAttackerCharacter->BBCharacterType = EBBCharacterType::BaseAttacker;
-			baseAttackerCharacter->bCanMoveBlocks = false;
-			baseAttackerCharacter->bCanLockBlocks = false;
+			SetBaseAttackerCharacterOptions(baseAttackerCharacter);
 			continue;
 		}
 		
@@ -238,12 +232,13 @@ void ABBGameMode::StartNewRound()
 		ABBCharacter* CharacterToPosses = GetWorld()->SpawnActor<ABBCharacter>(CharacterClass, spawnPos, spawnRot, SpawnParameters);
 		if(CharacterToPosses)
 		{
-			CharacterToPosses->bCanMoveBlocks = false;
-			CharacterToPosses->bCanLockBlocks = false;
+			SetBaseAttackerCharacterOptions(CharacterToPosses);
 			baseAttackerController->Possess(CharacterToPosses);
 		}
 	}
 
+
+	
 	BBGameState->SetGameState(EBBGameState::BaseBuildingTime);
 	GetWorldTimerManager().ClearTimer(TimerHandle_BaseBuildingTime);
 	GetWorldTimerManager().SetTimer(TimerHandle_BaseBuildingTime, this, &ABBGameMode::ChangeToBaseClimbingState, BaseBuildingTime, false);
@@ -252,6 +247,7 @@ void ABBGameMode::StartNewRound()
 	GetWorldTimerManager().SetTimer(TimerHandle_UpdateRemainingSecondsTimer, this, &ABBGameMode::UpdateRemainingSecondsTimer, 1.0f, true);
 	
 }
+
 
 void ABBGameMode::ChangeToBaseClimbingState()
 {
@@ -347,6 +343,22 @@ void ABBGameMode::SwapTeams()
 	TArray<APlayerController*> tempBuilders = baseBuilders;
 	baseBuilders = baseAttackers;
 	baseAttackers = tempBuilders;
+}
+
+void ABBGameMode::SetBaseBuilderCharacterOptions(ABBCharacter* targetCharacter)
+{
+	targetCharacter->BBCharacterType = EBBCharacterType::BaseBuilder;
+	targetCharacter->bCanMoveBlocks = true;
+	targetCharacter->bCanLockBlocks = true;
+	targetCharacter->DynamicMaterial->SetVectorParameterValue("BodyColor", FLinearColor(0.263795, 0, 1));
+}
+
+void ABBGameMode::SetBaseAttackerCharacterOptions(ABBCharacter* targetCharacter)
+{
+	targetCharacter->BBCharacterType = EBBCharacterType::BaseAttacker;
+	targetCharacter->bCanMoveBlocks = false;
+	targetCharacter->bCanLockBlocks = false;
+	targetCharacter->DynamicMaterial->SetVectorParameterValue("BodyColor", FLinearColor(1, 0.144553, 0)); 
 }
 
 

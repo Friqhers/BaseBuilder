@@ -76,6 +76,9 @@ protected:
 	UPROPERTY()
 	ABBBaseBlock* CurrentBaseBlock = nullptr;
 public:
+	UPROPERTY(EditAnywhere, Category = "Character Options")
+	UMaterialInterface* Material;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Options")
 	int BlocPickupDistance = 1000;
 	
@@ -91,7 +94,8 @@ public:
 	UPROPERTY(Replicated, BlueprintReadOnly)
 	FVector blockOffset;
 
-	
+	UPROPERTY(BlueprintReadWrite)
+	UMaterialInstanceDynamic* DynamicMaterial;
 public:
 	/**
 	 * Character type ....
@@ -104,6 +108,7 @@ public:
 
 	UPROPERTY(Replicated, BlueprintReadOnly)
 	EBBCharacterType BBCharacterType;
+
 	void SetBBCharacterType(EBBCharacterType CharacterType);
 
 public:	
