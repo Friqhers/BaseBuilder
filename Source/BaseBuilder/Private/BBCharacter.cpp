@@ -90,6 +90,11 @@ bool ABBCharacter::ServerPull_Validate()
 
 void ABBCharacter::ToggleBlockLock()
 {
+	if(!bCanLockBlocks)
+	{
+		return;
+	}
+	
 	if(!HasAuthority())
 	{
 		ServerToggleBlockLock();
@@ -147,6 +152,14 @@ bool ABBCharacter::ServerToggleBlockLock_Validate()
 	return true;
 }
 
+
+void ABBCharacter::SetBBCharacterType(EBBCharacterType CharacterType)
+{
+	if(HasAuthority())
+	{
+		BBCharacterType = CharacterType;
+	}
+}
 
 // Called every frame
 void ABBCharacter::Tick(float DeltaTime)
@@ -227,6 +240,11 @@ void ABBCharacter::CJump()
 
 void ABBCharacter::Pickup()
 {
+	if(!bCanMoveBlocks)
+	{
+		return;
+	}
+	
 	if(HasAuthority() == false)
 	{
 		ServerPickup();
@@ -315,19 +333,25 @@ void ABBCharacter::Drop()
 	if(CurrentBaseBlock && CurrentBaseBlock->OwnerCharacter == this)
 	{
 		CurrentBaseBlock->SetActorEnableCollision(true);
-		CurrentBaseBlock->collisionEnabled = true;
 		
-
 		if(HasAuthority())
 		{
+			CurrentBaseBlock->collisionEnabled = true;
 			CurrentBaseBlock->BlockIsActive = false;
 			CurrentBaseBlock->OnRep_BlockIsActive();
-		}
-		
-		//if block is not locked, reset the owner
-		if(!CurrentBaseBlock->BlockIsLockedToOwner)
-		{
-			CurrentBaseBlock->OwnerCharacter = nullptr;
+
+			//if block is not locked, reset the owner
+			if(!CurrentBaseBlock->BlockIsLockedToOwner)
+			{
+				CurrentBaseBlock->OwnerCharacter = nullptr;
+			}
+			//
+			// CurrentBaseBlock->SetActorLocation(CurrentBaseBlock->GetActorLocation());
+			// CurrentBaseBlock->UpdateComponentTransforms();
+			// CurrentBaseBlock->UpdateAllReplicatedComponents();
+			// CurrentBaseBlock->BaseBlockMesh->UpdateCollisionProfile();
+			// CurrentBaseBlock->BaseBlockMesh->UpdateCollisionFromStaticMesh();
+			// CurrentBaseBlock->ForceNetUpdate();
 		}
 		
 		CurrentBaseBlock = nullptr;		
@@ -446,5 +470,7 @@ void ABBCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 	DOREPLIFETIME(ABBCharacter, distanceBetween);
 	DOREPLIFETIME(ABBCharacter, blockOffset);
 	DOREPLIFETIME(ABBCharacter, blockColor);
+	DOREPLIFETIME(ABBCharacter, bCanMoveBlocks);
+	DOREPLIFETIME(ABBCharacter, bCanLockBlocks);
 }
 

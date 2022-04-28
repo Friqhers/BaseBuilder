@@ -24,6 +24,9 @@ ABBBaseBlock::ABBBaseBlock()
 void ABBBaseBlock::BeginPlay()
 {
 	Super::BeginPlay();
+
+	defaultTransform = GetActorTransform();
+	
 	SetReplicateMovement(true);
 	lastPosition = GetActorLocation();
 
@@ -47,30 +50,62 @@ void ABBBaseBlock::Tick(float DeltaTime)
 	
 	if(BlockIsActive && OwnerCharacter)
 	{
-		
+		//to prevent moving blocks when the transition between BaseBuildingTime state and ClimbBaseCountDown happening
+		if(!OwnerCharacter->bCanMoveBlocks)
+		{
+			OwnerCharacter->Drop();
+			Unlock();
+			if(HasAuthority())
+			{
+				BlockIsSynced = false;
+			}
+			return;
+		}
+		/***********************************************************/
+		/*
+		 *Networked block moving logic
+		 * 
+		 */
 		if(HasAuthority())
 		{
-			//Cast<APlayerController>(OwnerCharacter->Controller)->SmoothTargetViewRotation(OwnerCharacter, DeltaTime);
 			UpdatePosition();
+			BlockIsSynced = false;
 		}
 		else
 		{
 			if(OwnerCharacter->IsLocallyControlled())
 			{
 				UpdatePosition();
+				//SetActorLocation(FMath::VInterpTo(lastPosition, blockTeleportPosition, DeltaTime, 20));
 			}
 			else
 			{
 				
 				SetActorLocation(FMath::VInterpTo(lastPosition, blockTeleportPosition, DeltaTime, 10));
 			}
-			//ServerUpdatePosition();
-			
 		}
 
 		lastPosition = GetActorLocation();
+		
+		/***********************************************************/
+	}//Sync block after drop happens
+	else if(HasAuthority() && BlockIsSynced == false)
+	{
+		blockTeleportPosition = GetActorLocation();
+		SetActorLocation(blockTeleportPosition);
+		BlockIsSynced = true;
 	}
 }
+
+
+void ABBBaseBlock::OnRep_BlockIsSynced()
+{
+	if(BlockIsSynced)
+	{
+		SetActorLocation(blockTeleportPosition);
+	}
+}
+
 
 void ABBBaseBlock::Lock(ABBCharacter* ownerPlayer)
 {
@@ -95,6 +130,30 @@ void ABBBaseBlock::Unlock()
 		//set paramater with Set***ParamaterValue
 		DynamicMaterial->SetVectorParameterValue("Color", FVector(0.082353, 0.07451, 0.07451));
 		BaseBlockMesh->SetMaterial(0, DynamicMaterial);
+	}
+}
+
+void ABBBaseBlock::Reset()
+{
+ 	Super::Reset();
+	
+	if(HasAuthority())
+	{
+		// if(OwnerCharacter)
+		// {
+		// 	OwnerCharacter->Drop();
+		// }
+		
+		Unlock();
+		
+		collisionEnabled = true;
+		SetActorEnableCollision(true);
+		
+		BlockIsActive = false;
+		OnRep_BlockIsActive();
+		
+		SetActorTransform(defaultTransform);
+		lastPosition = defaultTransform.GetLocation();
 	}
 }
 
@@ -137,15 +196,19 @@ void ABBBaseBlock::UpdatePosition()
 	FVector direction;
 
 	direction= eyeRotation.Vector();
+	if(HasAuthority())
+	{
+		blockTeleportPosition = (eyeLocation + (direction * OwnerCharacter->distanceBetween)) - OwnerCharacter->blockOffset;
+		SetActorLocation(blockTeleportPosition);
+	}
+	else
+	{
+		FVector pos = (eyeLocation + (direction * OwnerCharacter->distanceBetween)) - OwnerCharacter->blockOffset;
+		SetActorLocation(pos);
+	}
 	
-	blockTeleportPosition = (eyeLocation + (direction * OwnerCharacter->distanceBetween)) - OwnerCharacter->blockOffset;
 
-	SetActorLocation(blockTeleportPosition);
-}
-
-void ABBBaseBlock::ServerUpdatePosition_Implementation()
-{
-	UpdatePosition();
+	
 }
 
 
@@ -163,4 +226,5 @@ void ABBBaseBlock::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 	DOREPLIFETIME(ABBBaseBlock, collisionEnabled);
 	DOREPLIFETIME(ABBBaseBlock, blockTeleportPosition);
 	DOREPLIFETIME(ABBBaseBlock, BlockIsLockedToOwner);
+	DOREPLIFETIME(ABBBaseBlock, BlockIsSynced);
 }

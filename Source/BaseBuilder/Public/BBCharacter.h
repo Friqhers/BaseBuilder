@@ -10,6 +10,12 @@
 class ABBBaseBlock;
 class UCameraComponent;
 
+UENUM(BlueprintType)
+enum class EBBCharacterType : uint8
+{
+	BaseBuilder,
+	BaseAttacker
+};
 
 // static FLinearColor colors[32] =
 // {
@@ -46,9 +52,9 @@ protected:
 	
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerPickup();
-	
+public:
 	void Drop();
-	
+protected:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerDrop();
 	
@@ -69,13 +75,15 @@ protected:
 
 	UPROPERTY()
 	ABBBaseBlock* CurrentBaseBlock = nullptr;
-	
+public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Options")
 	int BlocPickupDistance = 1000;
-
-public:
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Options", Replicated)
 	FLinearColor blockColor = FLinearColor(0,0,0);
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Options")
+	int pullPushPower = 10;
 	
 	UPROPERTY(Replicated, BlueprintReadOnly)
 	int distanceBetween;
@@ -83,8 +91,20 @@ public:
 	UPROPERTY(Replicated, BlueprintReadOnly)
 	FVector blockOffset;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Options")
-	int pullPushPower = 10;
+	
+public:
+	/**
+	 * Character type ....
+	 */
+	UPROPERTY(Replicated, BlueprintReadOnly)
+	bool bCanMoveBlocks = false;
+	
+	UPROPERTY(Replicated, BlueprintReadOnly)
+	bool bCanLockBlocks = false;
+
+	UPROPERTY(Replicated, BlueprintReadOnly)
+	EBBCharacterType BBCharacterType;
+	void SetBBCharacterType(EBBCharacterType CharacterType);
 
 public:	
 	// Called every frame
