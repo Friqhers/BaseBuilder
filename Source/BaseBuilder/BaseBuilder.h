@@ -4,3 +4,5 @@
 
 #include "CoreMinimal.h"
 
+#define COLLISION_BASEBLOCK ECC_GameTraceChannel1
+

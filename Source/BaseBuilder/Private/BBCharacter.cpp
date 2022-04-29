@@ -4,6 +4,7 @@
 #include "BBCharacter.h"
 #include "BBBaseBlock.h"
 #include "BBGameMode.h"
+#include "BaseBuilder/BaseBuilder.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/Actor.h"
 #include "Net/UnrealNetwork.h"
@@ -32,152 +33,17 @@ void ABBCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if(!DynamicMaterial)
-	{
-		DynamicMaterial = UMaterialInstanceDynamic::Create(Material, this);
-		GetMesh()->SetMaterial(0, DynamicMaterial);
-
-		if(BBCharacterType == EBBCharacterType::BaseAttacker)
-		{
-			DynamicMaterial->SetVectorParameterValue("BodyColor", FLinearColor(1, 0.144553, 0)); 
-		}
-		else
-		{
-			DynamicMaterial->SetVectorParameterValue("BodyColor", FLinearColor(0.263795, 0, 1));
-		}
-	}
 	
 	
 	if(HasAuthority() )
 	{
-		if(blockColor == FLinearColor(0,0,0))
-		{
-			blockColor = FLinearColor::MakeRandomColor();
-		}
 
-		//
 		HealthComponent->OnHealthChanged.AddDynamic(this, &ABBCharacter::OnHealthChanged);
 		
 	}
 }
 
-void ABBCharacter::Pull()
-{
-	if(CurrentBaseBlock)
-	{
-		if(distanceBetween-pullPushPower > 100)
-		{
-			distanceBetween-= pullPushPower;
-		}
 
-		if(!HasAuthority())
-		{
-			ServerPull();
-		}
-	}
-}
-
-void ABBCharacter::Push()
-{
-	if(CurrentBaseBlock)
-	{
-		if(distanceBetween+pullPushPower < 10000)
-		{
-			distanceBetween+= pullPushPower;
-		}
-
-		if(!HasAuthority())
-		{
-			ServerPush();
-		}
-
-	}
-}
-
-
-void ABBCharacter::ServerPush_Implementation()
-{
-	Push();
-}
-
-bool ABBCharacter::ServerPush_Validate()
-{
-	return true;
-}
-
-void ABBCharacter::ServerPull_Implementation()
-{
-	Pull();
-}
-
-bool ABBCharacter::ServerPull_Validate()
-{
-	return true;
-}
-
-void ABBCharacter::ToggleBlockLock()
-{
-	if(!bCanLockBlocks)
-	{
-		return;
-	}
-	
-	if(!HasAuthority())
-	{
-		ServerToggleBlockLock();
-	}
-	
-	FHitResult HitResult;
-	FVector EyeLocation;
-	FRotator EyeRotation;
-	GetActorEyesViewPoint(EyeLocation,EyeRotation);
-
-	FVector direction = EyeRotation.Vector();
-	FVector traceEnd = EyeLocation + (direction * BlocPickupDistance);
-
-
-	FCollisionQueryParams QueryParams;
-	QueryParams.AddIgnoredActor(this);
-	QueryParams.bTraceComplex = true;
-	
-	if(GetWorld()->LineTraceSingleByChannel(HitResult, EyeLocation, traceEnd, ECollisionChannel::ECC_Visibility,QueryParams))
-	{
-		ABBBaseBlock* BaseBlock = Cast<ABBBaseBlock>(HitResult.GetActor());
-		if(BaseBlock)
-		{
-			if(!BaseBlock->BlockIsActive)
-			{
-				if(BaseBlock->BlockIsLockedToOwner)
-				{
-					//unlock
-					if(BaseBlock->OwnerCharacter == this)
-					{
-						BaseBlock->Unlock();
-					}
-				}
-				else if(BaseBlock->BlockIsLockedToOwner == false)
-				{	
-					//lock
-					if(BaseBlock->OwnerCharacter == nullptr)
-					{
-						BaseBlock->Lock(this);
-					}
-				}
-			}
-		}
-	}
-}
-
-
-void ABBCharacter::ServerToggleBlockLock_Implementation()
-{
-	ToggleBlockLock();
-}
-
-bool ABBCharacter::ServerToggleBlockLock_Validate()
-{
-	return true;
-}
 
 
 // void ABBCharacter::OnRep_BBCharacterType()
@@ -215,12 +81,90 @@ void ABBCharacter::Tick(float DeltaTime)
 
 void ABBCharacter::MoveForward(float value)
 {
-	AddMovementInput(GetActorForwardVector() * value);
+	if(value != 0)
+	{
+		float zPos = GetActorLocation().Z - 66;
+		float xPos = GetActorLocation().X;
+		float yPos = GetActorLocation().Y + 25;
+		FVector ForwardPoint1, ForwardPoint2;
+		ForwardPoint1 = FVector(xPos,yPos, zPos);
+		ForwardPoint2 = FVector(xPos,yPos - 50, zPos);
+	
+		FVector direction = value > 0 ? GetActorForwardVector() : -GetActorForwardVector();
+		FVector traceEnd1 = ForwardPoint1 + direction * BaseBlockCheckDist;
+		FVector traceEnd2 = ForwardPoint2 + direction * BaseBlockCheckDist;
+		FHitResult Hit;
+		FCollisionQueryParams QueryParams;
+		QueryParams.AddIgnoredActor(this);
+		QueryParams.bTraceComplex = true;
+		
+		if(GetWorld()->LineTraceSingleByChannel(Hit, ForwardPoint1, traceEnd1, COLLISION_BASEBLOCK, QueryParams))
+		{
+			DrawDebugLine(GetWorld(), ForwardPoint1, Hit.ImpactPoint, FColor::Red,false, 1.0f,0,1.0f);
+			return;
+		}
+		else
+		{
+			DrawDebugLine(GetWorld(), ForwardPoint1, traceEnd1, FColor::Purple,false, 1.0f,0,1.0f);
+		}
+
+		
+		if(GetWorld()->LineTraceSingleByChannel(Hit, ForwardPoint2, traceEnd2, COLLISION_BASEBLOCK, QueryParams))
+		{
+			DrawDebugLine(GetWorld(), ForwardPoint2, Hit.ImpactPoint, FColor::Red,false, 1.0f,0,1.0f);
+			return;
+		}
+		else
+		{
+			DrawDebugLine(GetWorld(), ForwardPoint2, traceEnd2, FColor::Purple,false, 1.0f,0,1.0f);
+		}
+
+		AddMovementInput(GetActorForwardVector() * value);
+	}
 }
 
 void ABBCharacter::MoveRight(float value)
 {
-	AddMovementInput(GetActorRightVector() * value);
+	if(value != 0)
+	{
+		float zPos = GetActorLocation().Z - 66;
+		float xPos = GetActorLocation().X + 25;
+		float yPos = GetActorLocation().Y;
+		FVector ForwardPoint1, ForwardPoint2;
+		ForwardPoint1 = FVector(xPos,yPos, zPos);
+		ForwardPoint2 = FVector(xPos - 50,yPos, zPos);
+	
+		FVector direction = value > 0 ? GetActorRightVector() : -GetActorRightVector();
+		FVector traceEnd1 = ForwardPoint1 + direction * BaseBlockCheckDist;
+		FVector traceEnd2 = ForwardPoint2 + direction * BaseBlockCheckDist;
+		FHitResult Hit;
+		FCollisionQueryParams QueryParams;
+		QueryParams.AddIgnoredActor(this);
+		QueryParams.bTraceComplex = true;
+		
+		if(GetWorld()->LineTraceSingleByChannel(Hit, ForwardPoint1, traceEnd1, COLLISION_BASEBLOCK, QueryParams))
+		{
+			DrawDebugLine(GetWorld(), ForwardPoint1, Hit.ImpactPoint, FColor::Red,false, 1.0f,0,1.0f);
+			return;
+		}
+		else
+		{
+			DrawDebugLine(GetWorld(), ForwardPoint1, traceEnd1, FColor::Orange,false, 1.0f,0,1.0f);
+		}
+
+		
+		if(GetWorld()->LineTraceSingleByChannel(Hit, ForwardPoint2, traceEnd2, COLLISION_BASEBLOCK, QueryParams))
+		{
+			DrawDebugLine(GetWorld(), ForwardPoint2, Hit.ImpactPoint, FColor::Red,false, 1.0f,0,1.0f);
+			return;
+		}
+		else
+		{
+			DrawDebugLine(GetWorld(), ForwardPoint2, traceEnd2, FColor::Orange,false, 1.0f,0,1.0f);
+		}
+
+		AddMovementInput(GetActorRightVector() * value);
+	}
 }
 
 void ABBCharacter::BeginCrouch()
@@ -283,135 +227,7 @@ void ABBCharacter::CJump()
 	
 }
 
-void ABBCharacter::Pickup()
-{
-	if(!bCanMoveBlocks)
-	{
-		return;
-	}
-	
-	if(HasAuthority() == false)
-	{
-		ServerPickup();
-	}
-	
-	FHitResult HitResult;
-	FVector EyeLocation;
-	FRotator EyeRotation;
-	GetActorEyesViewPoint(EyeLocation,EyeRotation);
 
-	EyeLocation = CameraComp->GetComponentLocation();
-	
-	FVector direction = EyeRotation.Vector();
-	FVector traceEnd = EyeLocation + (direction * BlocPickupDistance);
-
-
-	FCollisionQueryParams QueryParams;
-	QueryParams.AddIgnoredActor(this);
-	QueryParams.bTraceComplex = true;
-	
-	if(GetWorld()->LineTraceSingleByChannel(HitResult, EyeLocation, traceEnd, ECollisionChannel::ECC_Visibility,QueryParams))
-	{
-		DrawDebugLine(GetWorld(), EyeLocation, HitResult.ImpactPoint, FColor::Green,false, 1.0f,0,1.0f);
-
-		ABBBaseBlock* BaseBlock = Cast<ABBBaseBlock>(HitResult.GetActor());
-		if(BaseBlock)
-		{
-			//if block is already in move
-			if(BaseBlock->BlockIsActive)
-			{
-				return;
-			}
-			
-			//if we try to move someone else's block just return;
-			if(BaseBlock->BlockIsLockedToOwner && BaseBlock->OwnerCharacter != this)
-			{
-				return;
-			}
-			
-			BaseBlock->SetActorEnableCollision(false);
-			BaseBlock->collisionEnabled = false;
-			
-			
-			BaseBlock->OwnerCharacter = this;
-
-			if(HasAuthority())
-			{
-				BaseBlock->BlockIsActive = true;
-				BaseBlock->OnRep_BlockIsActive();
-			}
-
-			
-			CurrentBaseBlock = BaseBlock;
-
-			//distanceBetween = FVector::Distance(EyeLocation, HitResult.GetActor()->GetActorLocation());
-			distanceBetween = FVector::Distance(EyeLocation, HitResult.ImpactPoint);
-			blockOffset = HitResult.ImpactPoint - HitResult.GetActor()->GetActorLocation();
-			
-			//FVector blockTeleportPosition = EyeLocation + (direction * BaseBlock->defaultDistanceBetween);
-			//BaseBlock->SetActorLocation(blockTeleportPosition);
-		}
-	}
-	else
-	{
-		DrawDebugLine(GetWorld(), EyeLocation, traceEnd, FColor::Red,false, 1.0f,0,1.0f);
-	}
-}
-
-void ABBCharacter::ServerPickup_Implementation()
-{
-	Pickup();
-}
-
-bool ABBCharacter::ServerPickup_Validate()
-{
-	return true;
-}
-
-void ABBCharacter::Drop()
-{
-	if(HasAuthority() == false)
-	{
-		ServerDrop();
-	}
-	
-	if(CurrentBaseBlock && CurrentBaseBlock->OwnerCharacter == this)
-	{
-		CurrentBaseBlock->SetActorEnableCollision(true);
-		
-		if(HasAuthority())
-		{
-			CurrentBaseBlock->collisionEnabled = true;
-			CurrentBaseBlock->BlockIsActive = false;
-			CurrentBaseBlock->OnRep_BlockIsActive();
-
-			//if block is not locked, reset the owner
-			if(!CurrentBaseBlock->BlockIsLockedToOwner)
-			{
-				CurrentBaseBlock->OwnerCharacter = nullptr;
-			}
-			//
-			// CurrentBaseBlock->SetActorLocation(CurrentBaseBlock->GetActorLocation());
-			// CurrentBaseBlock->UpdateComponentTransforms();
-			// CurrentBaseBlock->UpdateAllReplicatedComponents();
-			// CurrentBaseBlock->BaseBlockMesh->UpdateCollisionProfile();
-			// CurrentBaseBlock->BaseBlockMesh->UpdateCollisionFromStaticMesh();
-			// CurrentBaseBlock->ForceNetUpdate();
-		}
-		
-		CurrentBaseBlock = nullptr;		
-	}
-}
-
-void ABBCharacter::ServerDrop_Implementation()
-{
-	Drop();
-}
-
-bool ABBCharacter::ServerDrop_Validate()
-{
-	return true;
-}
 
 bool ABBCharacter::IsInitiatedJump() const
 {
@@ -523,16 +339,9 @@ void ABBCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	
 	PlayerInputComponent->BindAction("Crouch", EInputEvent::IE_Pressed, this, &ABBCharacter::BeginCrouch);
 	PlayerInputComponent->BindAction("Crouch", EInputEvent::IE_Released, this, &ABBCharacter::EndCrouch);
-
-	PlayerInputComponent->BindAction("Interact", EInputEvent::IE_Pressed, this, &ABBCharacter::Pickup);
-	PlayerInputComponent->BindAction("Interact", EInputEvent::IE_Released, this, &ABBCharacter::Drop);
-
+	
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ABBCharacter::CJump);
-
-	PlayerInputComponent->BindAction("Pull", IE_Pressed, this, &ABBCharacter::Pull);
-	PlayerInputComponent->BindAction("Push", IE_Pressed, this, &ABBCharacter::Push);
-
-	PlayerInputComponent->BindAction("ToggleBlockLock", IE_Pressed, this, &ABBCharacter::ToggleBlockLock);
+	
 }
 
 
@@ -541,12 +350,6 @@ void ABBCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ABBCharacter, bIsJumping);
-	DOREPLIFETIME(ABBCharacter, distanceBetween);
-	DOREPLIFETIME(ABBCharacter, blockOffset);
-	DOREPLIFETIME(ABBCharacter, blockColor);
-	DOREPLIFETIME(ABBCharacter, bCanMoveBlocks);
-	DOREPLIFETIME(ABBCharacter, bCanLockBlocks);
-	DOREPLIFETIME(ABBCharacter, BBCharacterType);
 	DOREPLIFETIME(ABBCharacter, bDied);
 }
 

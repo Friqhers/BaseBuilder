@@ -27,6 +27,9 @@ class APlayerStart;
 class ABBDoorBase;
 class ABBCharacter;
 class ABBPlayerState;
+class ABBAttackerCharacterBase;
+class ABBBuilderCharacterBase;
+
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnActorKilled, AActor*, KilledActor, AActor*, KillerActor, AController*, KilledController, AController*, KillerController);
 
@@ -42,7 +45,10 @@ public:
 	TSubclassOf<APlayerStart> baseAttackerSpawnPositionClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawn")
-	TSubclassOf<ABBCharacter> CharacterClass;
+	TSubclassOf<ABBCharacter> BaseBuilderCharacterClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawn")
+	TSubclassOf<ABBCharacter> BaseAttackerCharacterClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawn")
 	TSubclassOf<ABBDoorBase> baseAttackerDoorClass;
@@ -96,9 +102,9 @@ public:
 	
 	
 	//sets default base builder char. options
-	void SetBaseBuilderCharacterOptions(ABBCharacter* targetCharacter);
+	void SetBaseBuilderCharacterOptions(ABBBuilderCharacterBase* targetCharacter);
 	//sets default base attacker char. options
-	void SetBaseAttackerCharacterOptions(ABBCharacter* targetCharacter);
+	void SetBaseAttackerCharacterOptions(ABBAttackerCharacterBase* targetCharacter);
 
 	int waitedTime;
 	void UpdateRemainingSecondsTimer();

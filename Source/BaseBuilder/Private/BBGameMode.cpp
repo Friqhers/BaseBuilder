@@ -3,6 +3,8 @@
 
 #include "BBGameMode.h"
 
+#include "BBAttackerCharacterBase.h"
+#include "BBBuilderCharacterBase.h"
 #include "BBCharacter.h"
 #include "BBGameState.h"
 #include "BBPlayerState.h"
@@ -153,7 +155,7 @@ void ABBGameMode::StartNewRound()
 {
 	//Reset the level (like base blocks etc.)
 	ResetLevel();
-	
+	GetWorldTimerManager().ClearTimer(TimerHandle_RespawnTimer);	
 	
 	//find basebuilder spawn positions if it is not found yet
 	if(baseBuilderSpawnPositions.Num() <=0)
@@ -198,7 +200,7 @@ void ABBGameMode::StartNewRound()
 		FRotator spawnRot = baseBuilderSpawnPositions[randomSpawnPosIndex]->GetActorRotation();
 
 		//if controller has character, just teleport
-		ABBCharacter* baseBuilderCharacter = Cast<ABBCharacter>(baseBuilderController->GetCharacter());
+		ABBBuilderCharacterBase* baseBuilderCharacter = Cast<ABBBuilderCharacterBase>(baseBuilderController->GetCharacter());
 		if(baseBuilderCharacter)
 		{
 			baseBuilderCharacter->TeleportTo(spawnPos, spawnRot);
@@ -211,7 +213,7 @@ void ABBGameMode::StartNewRound()
 		FActorSpawnParameters SpawnParameters;
 		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 		
-		ABBCharacter* CharacterToPosses = GetWorld()->SpawnActor<ABBCharacter>(CharacterClass, spawnPos, spawnRot, SpawnParameters);
+		ABBBuilderCharacterBase* CharacterToPosses = GetWorld()->SpawnActor<ABBBuilderCharacterBase>(BaseBuilderCharacterClass, spawnPos, spawnRot, SpawnParameters);
 		if(CharacterToPosses)
 		{
 			SetBaseBuilderCharacterOptions(CharacterToPosses);
@@ -229,7 +231,7 @@ void ABBGameMode::StartNewRound()
 		FRotator spawnRot = baseAttackerSpawnPositions[randomSpawnPosIndex]->GetActorRotation();
 
 		//if controller has character, just teleport
-		ABBCharacter* baseAttackerCharacter = Cast<ABBCharacter>(baseAttackerController->GetCharacter());
+		ABBAttackerCharacterBase* baseAttackerCharacter = Cast<ABBAttackerCharacterBase>(baseAttackerController->GetCharacter());
 		if(baseAttackerCharacter)
 		{
 			baseAttackerCharacter->TeleportTo(spawnPos, spawnRot);
@@ -241,7 +243,7 @@ void ABBGameMode::StartNewRound()
 		FActorSpawnParameters SpawnParameters;
 		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 		
-		ABBCharacter* CharacterToPosses = GetWorld()->SpawnActor<ABBCharacter>(CharacterClass, spawnPos, spawnRot, SpawnParameters);
+		ABBAttackerCharacterBase* CharacterToPosses = GetWorld()->SpawnActor<ABBAttackerCharacterBase>(BaseAttackerCharacterClass, spawnPos, spawnRot, SpawnParameters);
 		if(CharacterToPosses)
 		{
 			SetBaseAttackerCharacterOptions(CharacterToPosses);
@@ -270,7 +272,7 @@ void ABBGameMode::ChangeToBaseClimbingState()
 	//set base builders' positions to starting positions
 	for (APlayerController* baseBuilderController : baseBuilders)
 	{
-		ABBCharacter* baseBuilderCharacter = Cast<ABBCharacter>(baseBuilderController->GetCharacter());
+		ABBBuilderCharacterBase* baseBuilderCharacter = Cast<ABBBuilderCharacterBase>(baseBuilderController->GetCharacter());
 		if(baseBuilderCharacter)
 		{
 			baseBuilderCharacter->bCanMoveBlocks = false;
@@ -380,7 +382,7 @@ void ABBGameMode::RespawnDeadPlayer(AController* ActorToRespawn)
 		FActorSpawnParameters SpawnParameters;
 		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 		
-		ABBCharacter* CharacterToPosses = GetWorld()->SpawnActor<ABBCharacter>(CharacterClass, spawnPos, spawnRot, SpawnParameters);
+		ABBAttackerCharacterBase* CharacterToPosses = GetWorld()->SpawnActor<ABBAttackerCharacterBase>(BaseAttackerCharacterClass, spawnPos, spawnRot, SpawnParameters);
 		if(CharacterToPosses)
 		{
 			SetBaseAttackerCharacterOptions(CharacterToPosses);
@@ -402,10 +404,13 @@ void ABBGameMode::RespawnDeadPlayer(AController* ActorToRespawn)
 			FActorSpawnParameters SpawnParameters;
 			SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 		
-			ABBCharacter* CharacterToPosses = GetWorld()->SpawnActor<ABBCharacter>(CharacterClass, spawnPos, spawnRot, SpawnParameters);
+			ABBBuilderCharacterBase* CharacterToPosses = GetWorld()->SpawnActor<ABBBuilderCharacterBase>(BaseBuilderCharacterClass, spawnPos, spawnRot, SpawnParameters);
 			if(CharacterToPosses)
 			{
-				SetBaseAttackerCharacterOptions(CharacterToPosses);
+				CharacterToPosses->BBCharacterType = EBBCharacterType::BaseAttacker;
+				CharacterToPosses->bCanMoveBlocks = false;
+				CharacterToPosses->bCanLockBlocks = false;
+				
 				baseBuilders[index]->Possess(CharacterToPosses);
 				CharacterToPosses->SetActorRotation(spawnRot);
 				
@@ -417,20 +422,20 @@ void ABBGameMode::RespawnDeadPlayer(AController* ActorToRespawn)
 	}
 }
 
-void ABBGameMode::SetBaseBuilderCharacterOptions(ABBCharacter* targetCharacter)
+void ABBGameMode::SetBaseBuilderCharacterOptions(ABBBuilderCharacterBase* targetCharacter)
 {
 	targetCharacter->BBCharacterType = EBBCharacterType::BaseBuilder;
 	targetCharacter->bCanMoveBlocks = true;
 	targetCharacter->bCanLockBlocks = true;
-	targetCharacter->DynamicMaterial->SetVectorParameterValue("BodyColor", FLinearColor(0.263795, 0, 1));
+	//targetCharacter->DynamicMaterial->SetVectorParameterValue("BodyColor", FLinearColor(0.263795, 0, 1));
 }
 
-void ABBGameMode::SetBaseAttackerCharacterOptions(ABBCharacter* targetCharacter)
+void ABBGameMode::SetBaseAttackerCharacterOptions(ABBAttackerCharacterBase* targetCharacter)
 {
 	targetCharacter->BBCharacterType = EBBCharacterType::BaseAttacker;
-	targetCharacter->bCanMoveBlocks = false;
-	targetCharacter->bCanLockBlocks = false;
-	targetCharacter->DynamicMaterial->SetVectorParameterValue("BodyColor", FLinearColor(1, 0.144553, 0)); 
+	//targetCharacter->bCanMoveBlocks = false;
+	//targetCharacter->bCanLockBlocks = false;
+	// targetCharacter->DynamicMaterial->SetVectorParameterValue("BodyColor", FLinearColor(1, 0.144553, 0)); 
 }
 
 
@@ -473,7 +478,6 @@ int ABBGameMode::GetCurrentPlayerCount()
 	}
 	return count;
 }
-
 
 bool ABBGameMode::GetAnyBaseBuilderAlive()
 {

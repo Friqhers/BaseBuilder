@@ -5,7 +5,7 @@
 #include "Camera/CameraComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "BBCharacter.h"
+#include "BBBuilderCharacterBase.h"
 
 // Sets default values
 ABBBaseBlock::ABBBaseBlock()
@@ -107,7 +107,7 @@ void ABBBaseBlock::OnRep_BlockIsSynced()
 }
 
 
-void ABBBaseBlock::Lock(ABBCharacter* ownerPlayer)
+void ABBBaseBlock::Lock(ABBBuilderCharacterBase* ownerPlayer)
 {
 	if(ownerPlayer)
 	{

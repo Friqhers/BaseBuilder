@@ -6,7 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "BBBaseBlock.generated.h"
 
-class ABBCharacter;
+class ABBBuilderCharacterBase;
 
 UCLASS()
 class BASEBUILDER_API ABBBaseBlock : public AActor
@@ -45,7 +45,7 @@ public:
 	bool BlockIsActive = false;
 
 	UPROPERTY(BlueprintReadWrite, Category = "BaseBlock", Replicated)
-	ABBCharacter* OwnerCharacter = nullptr;
+	ABBBuilderCharacterBase* OwnerCharacter = nullptr;
 	
 	UPROPERTY(ReplicatedUsing=OnRep_collisionEnabled)
 	bool collisionEnabled = true;
@@ -68,7 +68,7 @@ public:
 	UFUNCTION()
 	void OnRep_BlockIsActive();
 	
-	void Lock(ABBCharacter* ownerPlayer);
+	void Lock(ABBBuilderCharacterBase* ownerPlayer);
 	void Unlock();
 
 	virtual void Reset() override;
