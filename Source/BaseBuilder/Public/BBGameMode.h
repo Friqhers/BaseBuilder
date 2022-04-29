@@ -28,6 +28,8 @@ class ABBDoorBase;
 class ABBCharacter;
 class ABBPlayerState;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnActorKilled, AActor*, KilledActor, AActor*, KillerActor, AController*, KilledController, AController*, KillerController);
+
 UCLASS()
 class BASEBUILDER_API ABBGameMode : public AGameMode //can run on only server
 {
@@ -48,6 +50,12 @@ public:
 	TArray<ABBDoorBase*> baseAttackerDoors;
 	TArray<APlayerStart*> baseBuilderSpawnPositions;
 	TArray<APlayerStart*> baseAttackerSpawnPositions;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnActorKilled OnActorKilled;
+
+	UFUNCTION()
+	void OnActorKilledEvent(AActor* KilledActor, AActor* KillerActor, AController* KilledController, AController* KillerController);
 	
 	ABBGameMode();
 	
@@ -83,6 +91,9 @@ public:
 	void SwapTeams();
 	/***************/
 
+	UFUNCTION()
+	void RespawnDeadPlayer(AController* ActorToRespawn);
+	
 	
 	//sets default base builder char. options
 	void SetBaseBuilderCharacterOptions(ABBCharacter* targetCharacter);
@@ -96,6 +107,7 @@ protected:
 	ABBGameState* BBGameState;
 	TArray<APlayerController*> baseBuilders;
 	TArray<APlayerController*> baseAttackers;
+	TArray<APlayerController*> respawnedBaseBuilders; // they are now in base attacker state
 	
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Game Options")
@@ -113,7 +125,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Game Options")
 	float BaseDefendTime = 40.0f;
 	FTimerHandle TimerHandle_BaseDefendingTime;
-	
+
+	UPROPERTY(EditDefaultsOnly, Category = "Game Options")
+	float RespawnTime = 10.0f;
+	FTimerDelegate TimerHandle_RespawnDelegate;
+	FTimerHandle TimerHandle_RespawnTimer;
 	
 };
 

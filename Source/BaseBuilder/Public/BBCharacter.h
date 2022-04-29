@@ -3,12 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BBHealthComponent.h"
 #include "GameFramework/Character.h"
 #include "BBCharacter.generated.h"
 
 
 class ABBBaseBlock;
 class UCameraComponent;
+class UBBHealthComponent;
 
 UENUM(BlueprintType)
 enum class EBBCharacterType : uint8
@@ -154,5 +156,20 @@ protected:
 
 	float crouchHalfHeight;
 	float capsuleHalfHeight;
+public:
+	//Health, armor related
+	UPROPERTY(ReplicatedUsing = OnRep_Dead, BlueprintReadOnly, Category = "Player")
+	bool bDied;
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UBBHealthComponent* HealthComponent;
+
+	UFUNCTION()
+	void OnRep_Dead();
+
+	UFUNCTION()
+	void OnHealthChanged(UBBHealthComponent* InHealthComp, float Health, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+
+	
 };
 

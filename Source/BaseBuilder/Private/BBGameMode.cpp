@@ -6,7 +6,6 @@
 #include "BBCharacter.h"
 #include "BBGameState.h"
 #include "BBPlayerState.h"
-#include "../../../Plugins/Developer/RiderLink/Source/RD/thirdparty/variant/include/mpark/variant.hpp"
 #include "Components/ArrowComponent.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
@@ -31,7 +30,15 @@ void ABBGameMode::StartPlay()
 	Super::StartPlay();
 	
 	SetBBGameState(EBBGameState::WaitingForPlayers);
+
+	OnActorKilled.AddDynamic(this, &ABBGameMode::OnActorKilledEvent);
 	
+}
+
+void ABBGameMode::OnActorKilledEvent(AActor* KilledActor, AActor* KillerActor, AController* KilledController, AController* KillerController)
+{
+	TimerHandle_RespawnDelegate.BindUFunction(this, FName("RespawnDeadPlayer"), KilledController);
+	GetWorldTimerManager().SetTimer(TimerHandle_RespawnTimer, TimerHandle_RespawnDelegate,RespawnTime, false);
 }
 
 
@@ -52,11 +59,15 @@ void ABBGameMode::Tick(float DeltaSeconds)
 			//StartNewRound();
 		}
 	}
-	else if(BBGameState->GetGameState() == EBBGameState::BaseDefending)
+	else if(BBGameState->GetGameState() == EBBGameState::BaseDefending ||
+		BBGameState->GetGameState() == EBBGameState::BaseBuildingTime ||
+		BBGameState->GetGameState() == EBBGameState::ClimbBaseCountDown)
 	{
 		if(GetAnyBaseBuilderAlive() == false)
 		{
 			//base attacker win
+			GetWorldTimerManager().ClearTimer(TimerHandle_RespawnTimer);
+			ChaneToBaseAttackersVictory();
 		}
 	}
 }
@@ -184,7 +195,7 @@ void ABBGameMode::StartNewRound()
 	{
 		int randomSpawnPosIndex = FMath::RandRange(0, baseBuilderSpawnPositions.Num()-1);
 		FVector spawnPos = baseBuilderSpawnPositions[randomSpawnPosIndex]->GetActorLocation();
-		FRotator spawnRot = baseBuilderSpawnPositions[randomSpawnPosIndex]->GetActorForwardVector().Rotation();
+		FRotator spawnRot = baseBuilderSpawnPositions[randomSpawnPosIndex]->GetActorRotation();
 
 		//if controller has character, just teleport
 		ABBCharacter* baseBuilderCharacter = Cast<ABBCharacter>(baseBuilderController->GetCharacter());
@@ -205,6 +216,7 @@ void ABBGameMode::StartNewRound()
 		{
 			SetBaseBuilderCharacterOptions(CharacterToPosses);
 			baseBuilderController->Possess(CharacterToPosses);
+			CharacterToPosses->SetActorRotation(spawnRot);
 		}
 	}
 	
@@ -214,7 +226,7 @@ void ABBGameMode::StartNewRound()
 	{
 		int randomSpawnPosIndex = FMath::RandRange(0, baseAttackerSpawnPositions.Num()-1);
 		FVector spawnPos = baseAttackerSpawnPositions[randomSpawnPosIndex]->GetActorLocation();
-		FRotator spawnRot = baseAttackerSpawnPositions[randomSpawnPosIndex]->GetActorForwardVector().Rotation();
+		FRotator spawnRot = baseAttackerSpawnPositions[randomSpawnPosIndex]->GetActorRotation();
 
 		//if controller has character, just teleport
 		ABBCharacter* baseAttackerCharacter = Cast<ABBCharacter>(baseAttackerController->GetCharacter());
@@ -234,6 +246,8 @@ void ABBGameMode::StartNewRound()
 		{
 			SetBaseAttackerCharacterOptions(CharacterToPosses);
 			baseAttackerController->Possess(CharacterToPosses);
+			CharacterToPosses->SetActorRotation(spawnRot);
+
 		}
 	}
 
@@ -343,6 +357,64 @@ void ABBGameMode::SwapTeams()
 	TArray<APlayerController*> tempBuilders = baseBuilders;
 	baseBuilders = baseAttackers;
 	baseAttackers = tempBuilders;
+	
+	for (APlayerController* respawnedBaseBuilder : respawnedBaseBuilders)
+	{
+		baseAttackers.Add(respawnedBaseBuilder);
+	}
+	respawnedBaseBuilders.Empty();
+}
+
+void ABBGameMode::RespawnDeadPlayer(AController* ActorToRespawn)
+{
+	
+	APlayerController* playerController = Cast<APlayerController>(ActorToRespawn);
+	int index = baseAttackers.Find(playerController);
+	if(index != INDEX_NONE)
+	{
+		int randomSpawnPosIndex = FMath::RandRange(0, baseAttackerSpawnPositions.Num()-1);
+		FVector spawnPos = baseAttackerSpawnPositions[randomSpawnPosIndex]->GetActorLocation();
+		FRotator spawnRot = baseAttackerSpawnPositions[randomSpawnPosIndex]->GetActorRotation();
+		
+		
+		FActorSpawnParameters SpawnParameters;
+		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+		
+		ABBCharacter* CharacterToPosses = GetWorld()->SpawnActor<ABBCharacter>(CharacterClass, spawnPos, spawnRot, SpawnParameters);
+		if(CharacterToPosses)
+		{
+			SetBaseAttackerCharacterOptions(CharacterToPosses);
+			baseAttackers[index]->Possess(CharacterToPosses);
+			CharacterToPosses->SetActorRotation(spawnRot);
+
+		}
+	}
+	else
+	{
+		//if base builder respawns, he will be turned to base attacker
+		index = baseBuilders.Find(playerController);
+		if(index != INDEX_NONE)
+		{
+			int randomSpawnPosIndex = FMath::RandRange(0, baseAttackerSpawnPositions.Num()-1);
+			FVector spawnPos = baseAttackerSpawnPositions[randomSpawnPosIndex]->GetActorLocation();
+			FRotator spawnRot = baseAttackerSpawnPositions[randomSpawnPosIndex]->GetActorRotation();
+
+			FActorSpawnParameters SpawnParameters;
+			SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+		
+			ABBCharacter* CharacterToPosses = GetWorld()->SpawnActor<ABBCharacter>(CharacterClass, spawnPos, spawnRot, SpawnParameters);
+			if(CharacterToPosses)
+			{
+				SetBaseAttackerCharacterOptions(CharacterToPosses);
+				baseBuilders[index]->Possess(CharacterToPosses);
+				CharacterToPosses->SetActorRotation(spawnRot);
+				
+				respawnedBaseBuilders.Add(baseBuilders[index]);
+				baseBuilders.RemoveAt(index);
+				
+			}
+		}
+	}
 }
 
 void ABBGameMode::SetBaseBuilderCharacterOptions(ABBCharacter* targetCharacter)
@@ -410,8 +482,10 @@ bool ABBGameMode::GetAnyBaseBuilderAlive()
 		ABBCharacter* baseBuilderCharacter = Cast<ABBCharacter>(baseBuilderController->GetCharacter());
 		if(baseBuilderCharacter)
 		{
-			//if at least one base builder alive
-			return true;
+			if(baseBuilderCharacter->bDied == false)
+			{
+				return true;
+			}
 		}
 	}
 	return  false;

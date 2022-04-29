@@ -3,6 +3,7 @@
 
 #include "BBCharacter.h"
 #include "BBBaseBlock.h"
+#include "BBGameMode.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/Actor.h"
 #include "Net/UnrealNetwork.h"
@@ -18,6 +19,8 @@ ABBCharacter::ABBCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 	CameraComp->SetupAttachment(RootComponent);
+
+	HealthComponent = CreateDefaultSubobject<UBBHealthComponent>(TEXT("HealthComp"));
 	
 	crouchHalfHeight = GetCharacterMovement()->GetCrouchedHalfHeight();
 	capsuleHalfHeight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
@@ -45,9 +48,16 @@ void ABBCharacter::BeginPlay()
 	}
 	
 	
-	if(HasAuthority() && blockColor == FLinearColor(0,0,0))
+	if(HasAuthority() )
 	{
-		blockColor = FLinearColor::MakeRandomColor();
+		if(blockColor == FLinearColor(0,0,0))
+		{
+			blockColor = FLinearColor::MakeRandomColor();
+		}
+
+		//
+		HealthComponent->OnHealthChanged.AddDynamic(this, &ABBCharacter::OnHealthChanged);
+		
 	}
 }
 
@@ -459,7 +469,6 @@ void ABBCharacter::OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdj
 	CameraComp->AddRelativeLocation(FVector(0,0, capsuleHalfHeight-crouchHalfHeight));
 }
 
-
 void ABBCharacter::ServerSetIsJumping_Implementation(bool NewJumping)
 {
 	SetIsJumping(NewJumping);
@@ -468,6 +477,36 @@ void ABBCharacter::ServerSetIsJumping_Implementation(bool NewJumping)
 bool ABBCharacter::ServerSetIsJumping_Validate(bool NewJumping)
 {
 	return true;
+}
+
+
+void ABBCharacter::OnRep_Dead()
+{
+	GetMovementComponent()->StopMovementImmediately();
+	UCapsuleComponent* CapsuleComp = GetCapsuleComponent();
+	CapsuleComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn , ECollisionResponse::ECR_Ignore);
+	CapsuleComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera , ECollisionResponse::ECR_Ignore);
+	CapsuleComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_PhysicsBody , ECollisionResponse::ECR_Ignore);
+	
+	DetachFromControllerPendingDestroy();
+	SetLifeSpan(10.0f);
+	
+}
+
+void ABBCharacter::OnHealthChanged(UBBHealthComponent* InHealthComp, float Health, float HealthDelta,
+                                   const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
+{
+	if(Health <= 0.0f && bDied != true)
+	{
+		bDied = true;
+		//implement Game mode on actor killed
+		ABBGameMode* BBGameMode = Cast<ABBGameMode>(GetWorld()->GetAuthGameMode());
+		if(BBGameMode)
+		{
+			BBGameMode->OnActorKilled.Broadcast(GetOwner(), DamageCauser, GetController(),InstigatedBy);
+		}
+		OnRep_Dead();
+	}
 }
 
 
@@ -508,5 +547,6 @@ void ABBCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 	DOREPLIFETIME(ABBCharacter, bCanMoveBlocks);
 	DOREPLIFETIME(ABBCharacter, bCanLockBlocks);
 	DOREPLIFETIME(ABBCharacter, BBCharacterType);
+	DOREPLIFETIME(ABBCharacter, bDied);
 }
 
