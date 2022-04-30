@@ -3,13 +3,21 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BBHealthComponent.h"
 #include "GameFramework/Character.h"
 #include "BBCharacter.generated.h"
 
 
 class ABBBaseBlock;
 class UCameraComponent;
+class UBBHealthComponent;
 
+UENUM(BlueprintType)
+enum class EBBCharacterType : uint8
+{
+	BaseBuilder,
+	BaseAttacker
+};
 
 // static FLinearColor colors[32] =
 // {
@@ -32,6 +40,16 @@ public:
 	
 	UPROPERTY(VisibleanyWhere, BlueprintReadOnly, Category = "Components")
 	UCameraComponent* CameraComp;
+
+	UPROPERTY(VisibleanyWhere, BlueprintReadOnly, Category = "Components")
+	UArrowComponent* ForwardArrowComponent1;
+	UPROPERTY(VisibleanyWhere, BlueprintReadOnly, Category = "Components")
+	UArrowComponent* ForwardArrowComponent2;
+
+	UPROPERTY(VisibleanyWhere, BlueprintReadOnly, Category = "Components")
+	UArrowComponent* RightArrowComponent1;
+	UPROPERTY(VisibleanyWhere, BlueprintReadOnly, Category = "Components")
+	UArrowComponent* RightArrowComponent2;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -41,50 +59,6 @@ protected:
 	void BeginCrouch();
 	void EndCrouch();
 	void CJump();
-
-	void Pickup();
-	
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerPickup();
-	
-	void Drop();
-	
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerDrop();
-	
-	/// Pull and Push functions
-	void Pull();
-	void Push();
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerPull();
-	
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerPush();
-	
-	//Block lock and unlock functions
-	void ToggleBlockLock();
-	
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerToggleBlockLock();
-
-	UPROPERTY()
-	ABBBaseBlock* CurrentBaseBlock = nullptr;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Options")
-	int BlocPickupDistance = 1000;
-
-public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Options", Replicated)
-	FLinearColor blockColor = FLinearColor(0,0,0);
-	
-	UPROPERTY(Replicated, BlueprintReadOnly)
-	int distanceBetween;
-
-	UPROPERTY(Replicated, BlueprintReadOnly)
-	FVector blockOffset;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Options")
-	int pullPushPower = 10;
 
 public:	
 	// Called every frame
@@ -115,6 +89,15 @@ public:
 	UFUNCTION(Reliable, Server, WithValidation)
 	void ServerCrouchJump();
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Options")
+	float TimeBetweenJumps = 0.67f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Options")
+	float BaseBlockCheckDist = 10.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Options")
+	float SlowMultiplier = 10.0f;
+
 protected:
 	FTimerHandle TimerHandle_FinishJump;
 
@@ -124,10 +107,30 @@ protected:
 
 	float lastJumpTime = 0;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Character Options")
-	float TimeBetweenJumps = 0.67f;
+	
 
 	float crouchHalfHeight;
 	float capsuleHalfHeight;
+
+public:
+	UPROPERTY(Replicated, BlueprintReadOnly)
+	EBBCharacterType BBCharacterType;
+
+	void SetBBCharacterType(EBBCharacterType CharacterType);
+public:
+	//Health, armor related
+	UPROPERTY(ReplicatedUsing = OnRep_Dead, BlueprintReadOnly, Category = "Player")
+	bool bDied;
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UBBHealthComponent* HealthComponent;
+
+	UFUNCTION()
+	void OnRep_Dead();
+
+	UFUNCTION()
+	void OnHealthChanged(UBBHealthComponent* InHealthComp, float Health, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+
+	
 };
 

@@ -6,7 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "BBBaseBlock.generated.h"
 
-class ABBCharacter;
+class ABBBuilderCharacterBase;
 
 UCLASS()
 class BASEBUILDER_API ABBBaseBlock : public AActor
@@ -20,9 +20,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
-	UStaticMeshComponent* BaseBlockMesh;
+	
 
 	UPROPERTY(EditAnywhere, Category = "Visual Effects")
 	UMaterialInterface* Material;
@@ -31,12 +29,15 @@ protected:
 	UMaterialInstanceDynamic* DynamicMaterial;
 	
 	FVector lastPosition;
+
+	FTransform defaultTransform;
 	
 	void UpdatePosition();
 
-	UFUNCTION(Reliable, Server)
-	void ServerUpdatePosition();
-public:	
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
+	UStaticMeshComponent* BaseBlockMesh;
+	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -44,7 +45,7 @@ public:
 	bool BlockIsActive = false;
 
 	UPROPERTY(BlueprintReadWrite, Category = "BaseBlock", Replicated)
-	ABBCharacter* OwnerCharacter = nullptr;
+	ABBBuilderCharacterBase* OwnerCharacter = nullptr;
 	
 	UPROPERTY(ReplicatedUsing=OnRep_collisionEnabled)
 	bool collisionEnabled = true;
@@ -55,14 +56,23 @@ public:
 	UPROPERTY(ReplicatedUsing = OnRep_BlockLockChanges)
 	bool BlockIsLockedToOwner = false;
 
+	UPROPERTY(ReplicatedUsing = OnRep_BlockIsSynced)
+	bool BlockIsSynced = true;
+
 	UFUNCTION()
 	void OnRep_BlockLockChanges();
 
 	UFUNCTION()
+	void OnRep_BlockIsSynced();
+
+	UFUNCTION()
 	void OnRep_BlockIsActive();
 	
-	void Lock(ABBCharacter* ownerPlayer);
+	void Lock(ABBBuilderCharacterBase* ownerPlayer);
 	void Unlock();
+
+	virtual void Reset() override;
+
 	
 protected:
 	UFUNCTION()
