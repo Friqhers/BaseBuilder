@@ -10,7 +10,8 @@
 #include "Net/UnrealNetwork.h"
 #include "GameFramework\CharacterMovementComponent.h"
 #include "Camera/CameraComponent.h"
-
+#include "Components/ArrowComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 
 // Sets default values
@@ -22,6 +23,17 @@ ABBCharacter::ABBCharacter()
 	CameraComp->SetupAttachment(RootComponent);
 
 	HealthComponent = CreateDefaultSubobject<UBBHealthComponent>(TEXT("HealthComp"));
+
+	ForwardArrowComponent1 = CreateDefaultSubobject<UArrowComponent>(TEXT("ForwardArrowComp1"));
+	ForwardArrowComponent1->SetupAttachment(RootComponent);
+	ForwardArrowComponent2 = CreateDefaultSubobject<UArrowComponent>(TEXT("ForwardArrowComp2"));
+	ForwardArrowComponent2->SetupAttachment(RootComponent);
+	
+	RightArrowComponent1 = CreateDefaultSubobject<UArrowComponent>(TEXT("RightArrowComp1"));
+	RightArrowComponent1->SetupAttachment(RootComponent);
+	RightArrowComponent2 = CreateDefaultSubobject<UArrowComponent>(TEXT("RightArrowComp2"));
+	RightArrowComponent2->SetupAttachment(RootComponent);
+	
 	
 	crouchHalfHeight = GetCharacterMovement()->GetCrouchedHalfHeight();
 	capsuleHalfHeight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
@@ -83,13 +95,9 @@ void ABBCharacter::MoveForward(float value)
 {
 	if(value != 0)
 	{
-		float zPos = GetActorLocation().Z - 66;
-		float xPos = GetActorLocation().X;
-		float yPos = GetActorLocation().Y + 25;
-		FVector ForwardPoint1, ForwardPoint2;
-		ForwardPoint1 = FVector(xPos,yPos, zPos);
-		ForwardPoint2 = FVector(xPos,yPos - 50, zPos);
-	
+		FVector ForwardPoint1 = ForwardArrowComponent1->GetComponentLocation();
+		FVector ForwardPoint2 = ForwardArrowComponent2->GetComponentLocation();
+		
 		FVector direction = value > 0 ? GetActorForwardVector() : -GetActorForwardVector();
 		FVector traceEnd1 = ForwardPoint1 + direction * BaseBlockCheckDist;
 		FVector traceEnd2 = ForwardPoint2 + direction * BaseBlockCheckDist;
@@ -98,10 +106,28 @@ void ABBCharacter::MoveForward(float value)
 		QueryParams.AddIgnoredActor(this);
 		QueryParams.bTraceComplex = true;
 		
+		bool firstTrace = true, secondTrace = true;
 		if(GetWorld()->LineTraceSingleByChannel(Hit, ForwardPoint1, traceEnd1, COLLISION_BASEBLOCK, QueryParams))
 		{
-			DrawDebugLine(GetWorld(), ForwardPoint1, Hit.ImpactPoint, FColor::Red,false, 1.0f,0,1.0f);
-			return;
+			// FVector unitVec1 = UKismetMathLibrary::GetDirectionUnitVector(ForwardPoint1, traceEnd1);
+			// FVector unitVec2 = UKismetMathLibrary::GetDirectionUnitVector(Hit.Location, Hit.ImpactPoint);
+			// double ImpactAngle = UKismetMathLibrary::DegAcos(UKismetMathLibrary::Dot_VectorVector(unitVec1, unitVec2));
+
+			float DotP = FVector::DotProduct(Hit.Normal, direction);
+			float ImpactAngle = FMath::RadiansToDegrees(acosf(-DotP));
+			UE_LOG(LogTemp, Log, TEXT("Angle: %s"), *FString::SanitizeFloat(ImpactAngle));
+
+			if(ImpactAngle >= -45.0 && ImpactAngle <=45.0)
+			{
+				DrawDebugLine(GetWorld(), ForwardPoint1, Hit.ImpactPoint, FColor::Red,false, 0.5f,0,1.0f);
+				firstTrace = false;
+			}
+			else
+			{
+				DrawDebugLine(GetWorld(), ForwardPoint1, Hit.ImpactPoint, FColor::Magenta,false, 0.5f,0,1.0f);
+			}
+			
+			
 		}
 		else
 		{
@@ -109,17 +135,42 @@ void ABBCharacter::MoveForward(float value)
 		}
 
 		
+		
 		if(GetWorld()->LineTraceSingleByChannel(Hit, ForwardPoint2, traceEnd2, COLLISION_BASEBLOCK, QueryParams))
 		{
-			DrawDebugLine(GetWorld(), ForwardPoint2, Hit.ImpactPoint, FColor::Red,false, 1.0f,0,1.0f);
-			return;
+			// FVector unitVec1 = UKismetMathLibrary::GetDirectionUnitVector(ForwardPoint2, traceEnd2);
+			// FVector unitVec2 = UKismetMathLibrary::GetDirectionUnitVector(Hit.Location, Hit.ImpactPoint);
+			// double ImpactAngle = UKismetMathLibrary::DegAcos(UKismetMathLibrary::Dot_VectorVector(unitVec1, unitVec2));
+
+			float DotP = FVector::DotProduct(Hit.Normal, direction);
+			float ImpactAngle = FMath::RadiansToDegrees(acosf(-DotP));
+			UE_LOG(LogTemp, Log, TEXT("Angle: %s"), *FString::SanitizeFloat(ImpactAngle));
+
+			if(ImpactAngle >= -45.0 && ImpactAngle <=45.0)
+			{
+				DrawDebugLine(GetWorld(), ForwardPoint2, Hit.ImpactPoint, FColor::Red,false, 0.5f,0,1.0f);
+				secondTrace = false;
+			}
+			else
+			{
+				DrawDebugLine(GetWorld(), ForwardPoint2, Hit.ImpactPoint, FColor::Magenta,false, 0.5f,0,1.0f);
+			}
+			
 		}
 		else
 		{
 			DrawDebugLine(GetWorld(), ForwardPoint2, traceEnd2, FColor::Purple,false, 1.0f,0,1.0f);
 		}
 
-		AddMovementInput(GetActorForwardVector() * value);
+		if(firstTrace && secondTrace)
+		{
+			AddMovementInput(GetActorForwardVector() * value);
+		}
+		else
+		{
+			AddMovementInput(GetActorForwardVector() * value / SlowMultiplier);
+		}
+		
 	}
 }
 
@@ -127,43 +178,75 @@ void ABBCharacter::MoveRight(float value)
 {
 	if(value != 0)
 	{
-		float zPos = GetActorLocation().Z - 66;
-		float xPos = GetActorLocation().X + 25;
-		float yPos = GetActorLocation().Y;
-		FVector ForwardPoint1, ForwardPoint2;
-		ForwardPoint1 = FVector(xPos,yPos, zPos);
-		ForwardPoint2 = FVector(xPos - 50,yPos, zPos);
+		FVector RightPoint1 = RightArrowComponent1->GetComponentLocation();
+		FVector RightPoint2 = RightArrowComponent2->GetComponentLocation();
 	
 		FVector direction = value > 0 ? GetActorRightVector() : -GetActorRightVector();
-		FVector traceEnd1 = ForwardPoint1 + direction * BaseBlockCheckDist;
-		FVector traceEnd2 = ForwardPoint2 + direction * BaseBlockCheckDist;
+		FVector traceEnd1 = RightPoint1 + direction * BaseBlockCheckDist;
+		FVector traceEnd2 = RightPoint2 + direction * BaseBlockCheckDist;
 		FHitResult Hit;
 		FCollisionQueryParams QueryParams;
 		QueryParams.AddIgnoredActor(this);
 		QueryParams.bTraceComplex = true;
-		
-		if(GetWorld()->LineTraceSingleByChannel(Hit, ForwardPoint1, traceEnd1, COLLISION_BASEBLOCK, QueryParams))
+
+		bool firstTrace = true, secondTrace = true;
+		if(GetWorld()->LineTraceSingleByChannel(Hit, RightPoint1, traceEnd1, COLLISION_BASEBLOCK, QueryParams))
 		{
-			DrawDebugLine(GetWorld(), ForwardPoint1, Hit.ImpactPoint, FColor::Red,false, 1.0f,0,1.0f);
-			return;
+			// FVector unitVec1 = UKismetMathLibrary::GetDirectionUnitVector(RightPoint1, traceEnd1);
+			// FVector unitVec2 = UKismetMathLibrary::GetDirectionUnitVector(Hit.Location, Hit.ImpactPoint);
+			// double ImpactAngle = UKismetMathLibrary::DegAcos(UKismetMathLibrary::Dot_VectorVector(unitVec1, unitVec2));
+			float DotP = FVector::DotProduct(Hit.Normal, direction);
+			float ImpactAngle = FMath::RadiansToDegrees(acosf(-DotP));
+			UE_LOG(LogTemp, Log, TEXT("Angle: %s"), *FString::SanitizeFloat(ImpactAngle));
+
+			if(ImpactAngle >= -45.0 && ImpactAngle <=45.0)
+			{
+				DrawDebugLine(GetWorld(), RightPoint1, Hit.ImpactPoint, FColor::Red,false, 0.5f,0,1.0f);
+				firstTrace = false;
+			}
+			else
+			{
+				DrawDebugLine(GetWorld(), RightPoint1, Hit.ImpactPoint, FColor::Yellow,false, 0.5f,0,1.0f);
+			}
+			
 		}
 		else
 		{
-			DrawDebugLine(GetWorld(), ForwardPoint1, traceEnd1, FColor::Orange,false, 1.0f,0,1.0f);
+			DrawDebugLine(GetWorld(), RightPoint1, traceEnd1, FColor::Orange,false, 0.5f,0,1.0f);
 		}
 
 		
-		if(GetWorld()->LineTraceSingleByChannel(Hit, ForwardPoint2, traceEnd2, COLLISION_BASEBLOCK, QueryParams))
+		if(GetWorld()->LineTraceSingleByChannel(Hit, RightPoint2, traceEnd2, COLLISION_BASEBLOCK, QueryParams))
 		{
-			DrawDebugLine(GetWorld(), ForwardPoint2, Hit.ImpactPoint, FColor::Red,false, 1.0f,0,1.0f);
-			return;
+			// FVector unitVec1 = UKismetMathLibrary::GetDirectionUnitVector(RightPoint2, traceEnd2);
+			// FVector unitVec2 = UKismetMathLibrary::GetDirectionUnitVector(Hit.Location, Hit.ImpactPoint);
+			// double ImpactAngle = UKismetMathLibrary::DegAcos(UKismetMathLibrary::Dot_VectorVector(unitVec1, unitVec2));
+			float DotP = FVector::DotProduct(Hit.Normal, direction);
+			float ImpactAngle = FMath::RadiansToDegrees(acosf(-DotP));
+			UE_LOG(LogTemp, Log, TEXT("Angle: %s"), *FString::SanitizeFloat(ImpactAngle));
+			if(ImpactAngle >= -45.0 && ImpactAngle <=45.0)
+			{
+				DrawDebugLine(GetWorld(), RightPoint2, Hit.ImpactPoint, FColor::Red,false, 0.5f,0,1.0f);
+				secondTrace = false;
+			}
+			else
+			{
+				DrawDebugLine(GetWorld(), RightPoint2, Hit.ImpactPoint, FColor::Yellow,false, 0.5f,0,1.0f);
+			}
 		}
 		else
 		{
-			DrawDebugLine(GetWorld(), ForwardPoint2, traceEnd2, FColor::Orange,false, 1.0f,0,1.0f);
+			DrawDebugLine(GetWorld(), RightPoint2, traceEnd2, FColor::Orange,false, 1.0f,0,1.0f);
 		}
 
-		AddMovementInput(GetActorRightVector() * value);
+		if(firstTrace && secondTrace)
+		{
+			AddMovementInput(GetActorRightVector() * value);
+		}
+		else
+		{
+			AddMovementInput(GetActorForwardVector() * value / SlowMultiplier);
+		}
 	}
 }
 
@@ -351,5 +434,6 @@ void ABBCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 
 	DOREPLIFETIME(ABBCharacter, bIsJumping);
 	DOREPLIFETIME(ABBCharacter, bDied);
+	DOREPLIFETIME(ABBCharacter, BBCharacterType);
 }
 

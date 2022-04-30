@@ -40,6 +40,16 @@ public:
 	
 	UPROPERTY(VisibleanyWhere, BlueprintReadOnly, Category = "Components")
 	UCameraComponent* CameraComp;
+
+	UPROPERTY(VisibleanyWhere, BlueprintReadOnly, Category = "Components")
+	UArrowComponent* ForwardArrowComponent1;
+	UPROPERTY(VisibleanyWhere, BlueprintReadOnly, Category = "Components")
+	UArrowComponent* ForwardArrowComponent2;
+
+	UPROPERTY(VisibleanyWhere, BlueprintReadOnly, Category = "Components")
+	UArrowComponent* RightArrowComponent1;
+	UPROPERTY(VisibleanyWhere, BlueprintReadOnly, Category = "Components")
+	UArrowComponent* RightArrowComponent2;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -84,6 +94,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Options")
 	float BaseBlockCheckDist = 10.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Options")
+	float SlowMultiplier = 10.0f;
 
 protected:
 	FTimerHandle TimerHandle_FinishJump;

@@ -89,21 +89,57 @@ void ABBGameMode::UpdateRemainingSecondsTimer()
 void ABBGameMode::OnPostLogin(AController* NewPlayer)
 {
 	Super::OnPostLogin(NewPlayer);
+	
+	NewPlayer->UnPossess();
+	FindSpawnPositions();
+	
 	int numberOfBuilders = baseBuilders.Num();
 	int numberOfAttackers = baseAttackers.Num();
+	APlayerController* controller = Cast<APlayerController>(NewPlayer);
 
-	if(numberOfAttackers == numberOfBuilders)
+	if(numberOfAttackers == numberOfBuilders || numberOfAttackers > numberOfBuilders)
 	{
-		baseBuilders.Add(Cast<APlayerController>(NewPlayer));
+		baseBuilders.Add(controller);
+		
+		int randomSpawnPosIndex = FMath::RandRange(0, baseBuilderSpawnPositions.Num()-1);
+		FVector spawnPos = baseBuilderSpawnPositions[randomSpawnPosIndex]->GetActorLocation();
+		FRotator spawnRot = baseBuilderSpawnPositions[randomSpawnPosIndex]->GetActorRotation();
+		
+		FActorSpawnParameters SpawnParameters;
+		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+		
+		ABBBuilderCharacterBase* CharacterToPosses = GetWorld()->SpawnActor<ABBBuilderCharacterBase>(BaseBuilderCharacterClass, spawnPos, spawnRot, SpawnParameters);
+		if(CharacterToPosses)
+		{
+			SetBaseBuilderCharacterOptions(CharacterToPosses);
+			controller->Possess(CharacterToPosses);
+			CharacterToPosses->SetActorRotation(spawnRot);
+		}
 	}
-	else if(numberOfAttackers > numberOfBuilders)
+	else if(numberOfBuilders > numberOfAttackers)
 	{
-		baseBuilders.Add(Cast<APlayerController>(NewPlayer));
+		baseAttackers.Add(controller);
+
+		int randomSpawnPosIndex = FMath::RandRange(0, baseAttackerSpawnPositions.Num()-1);
+		FVector spawnPos = baseAttackerSpawnPositions[randomSpawnPosIndex]->GetActorLocation();
+		FRotator spawnRot = baseAttackerSpawnPositions[randomSpawnPosIndex]->GetActorRotation();
+		
+		FActorSpawnParameters SpawnParameters;
+		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+		
+		ABBAttackerCharacterBase* CharacterToPosses = GetWorld()->SpawnActor<ABBAttackerCharacterBase>(BaseAttackerCharacterClass, spawnPos, spawnRot, SpawnParameters);
+		if(CharacterToPosses)
+		{
+			SetBaseAttackerCharacterOptions(CharacterToPosses);
+			controller->Possess(CharacterToPosses);
+			CharacterToPosses->SetActorRotation(spawnRot);
+		}
 	}
-	else //numberOfBuilders > numberOfAttackers
-	{
-		baseAttackers.Add(Cast<APlayerController>(NewPlayer));
-	}
+
+	
+
+
+	
 
 	if(BBGameState == nullptr)
 	{
@@ -150,13 +186,8 @@ void ABBGameMode::Logout(AController* Exiting)
 	UE_LOG(LogTemp, Warning, TEXT("Değişik bişi oldu, çıkan oyuncuyu bulup silemedik gardaş"));
 }
 
-
-void ABBGameMode::StartNewRound()
+void ABBGameMode::FindSpawnPositions()
 {
-	//Reset the level (like base blocks etc.)
-	ResetLevel();
-	GetWorldTimerManager().ClearTimer(TimerHandle_RespawnTimer);	
-	
 	//find basebuilder spawn positions if it is not found yet
 	if(baseBuilderSpawnPositions.Num() <=0)
 	{
@@ -178,6 +209,14 @@ void ABBGameMode::StartNewRound()
 			baseAttackerSpawnPositions.Add(Cast<APlayerStart>(baseAttackerSpawnActor));
 		}
 	}
+}
+void ABBGameMode::StartNewRound()
+{
+	//Reset the level (like base blocks etc.)
+	ResetLevel();
+	GetWorldTimerManager().ClearTimer(TimerHandle_RespawnTimer);	
+	FindSpawnPositions();
+	
 
 	if(baseAttackerDoors.Num() <= 0)
 	{
@@ -395,6 +434,7 @@ void ABBGameMode::RespawnDeadPlayer(AController* ActorToRespawn)
 	{
 		//if base builder respawns, he will be turned to base attacker
 		index = baseBuilders.Find(playerController);
+		
 		if(index != INDEX_NONE)
 		{
 			int randomSpawnPosIndex = FMath::RandRange(0, baseAttackerSpawnPositions.Num()-1);

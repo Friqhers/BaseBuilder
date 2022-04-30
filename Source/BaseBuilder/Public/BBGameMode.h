@@ -84,7 +84,7 @@ public:
 	int GetCurrentPlayerCount();
 
 	bool GetAnyBaseBuilderAlive();
-	
+	void FindSpawnPositions();
 	/***************/
 	//Game flow logic funcs.
 	void StartNewRound();
