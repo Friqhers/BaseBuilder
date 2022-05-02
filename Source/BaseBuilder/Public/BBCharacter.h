@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "BBHealthComponent.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "BBCharacter.generated.h"
 
 
@@ -40,6 +41,9 @@ public:
 	
 	UPROPERTY(VisibleanyWhere, BlueprintReadOnly, Category = "Components")
 	UCameraComponent* CameraComp;
+
+	// UPROPERTY(VisibleanyWhere, BlueprintReadOnly, Category = "Components")
+	// USpringArmComponent* SpringArmComponent;
 
 	UPROPERTY(VisibleanyWhere, BlueprintReadOnly, Category = "Components")
 	UArrowComponent* ForwardArrowComponent1;
@@ -98,25 +102,21 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Options")
 	float SlowMultiplier = 10.0f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Options")
+	float CrouchJumpZSpeed = 370.0f;	
+	
+	
+
 protected:
 	FTimerHandle TimerHandle_FinishJump;
-
-	void FinishJump();
 	
 	bool jumpFinished = false;
 
 	float lastJumpTime = 0;
 	
-	
-
 	float crouchHalfHeight;
 	float capsuleHalfHeight;
 
-public:
-	UPROPERTY(Replicated, BlueprintReadOnly)
-	EBBCharacterType BBCharacterType;
-
-	void SetBBCharacterType(EBBCharacterType CharacterType);
 public:
 	//Health, armor related
 	UPROPERTY(ReplicatedUsing = OnRep_Dead, BlueprintReadOnly, Category = "Player")

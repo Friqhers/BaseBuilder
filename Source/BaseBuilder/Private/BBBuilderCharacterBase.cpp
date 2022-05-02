@@ -320,5 +320,4 @@ void ABBBuilderCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 	DOREPLIFETIME(ABBBuilderCharacterBase, blockColor);
 	DOREPLIFETIME(ABBBuilderCharacterBase, bCanMoveBlocks);
 	DOREPLIFETIME(ABBBuilderCharacterBase, bCanLockBlocks);
-	DOREPLIFETIME(ABBBuilderCharacterBase, BBCharacterType);
 }

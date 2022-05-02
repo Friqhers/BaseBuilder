@@ -29,7 +29,7 @@ class ABBCharacter;
 class ABBPlayerState;
 class ABBAttackerCharacterBase;
 class ABBBuilderCharacterBase;
-
+class ABBPlayerController;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnActorKilled, AActor*, KilledActor, AActor*, KillerActor, AController*, KilledController, AController*, KillerController);
 
@@ -111,9 +111,9 @@ public:
 	FTimerHandle TimerHandle_UpdateRemainingSecondsTimer;
 protected:
 	ABBGameState* BBGameState;
-	TArray<APlayerController*> baseBuilders;
-	TArray<APlayerController*> baseAttackers;
-	TArray<APlayerController*> respawnedBaseBuilders; // they are now in base attacker state
+	TArray<ABBPlayerController*> baseBuilders;
+	TArray<ABBPlayerController*> baseAttackers;
+	TArray<ABBPlayerController*> respawnedBaseBuilders; // they are now in base attacker state
 	
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Game Options")
@@ -132,10 +132,9 @@ protected:
 	float BaseDefendTime = 40.0f;
 	FTimerHandle TimerHandle_BaseDefendingTime;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Game Options")
-	float RespawnTime = 10.0f;
-	FTimerDelegate TimerHandle_RespawnDelegate;
-	FTimerHandle TimerHandle_RespawnTimer;
+	
+
+	
 	
 };
 

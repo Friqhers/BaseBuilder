@@ -4,6 +4,7 @@
 #include "BBCharacter.h"
 #include "BBBaseBlock.h"
 #include "BBGameMode.h"
+#include "BBAttackerCharacterBase.h"
 #include "BaseBuilder/BaseBuilder.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/Actor.h"
@@ -19,6 +20,10 @@ ABBCharacter::ABBCharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	// SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
+	// SpringArmComponent->SetupAttachment(RootComponent);
+	
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 	CameraComp->SetupAttachment(RootComponent);
 
@@ -44,7 +49,6 @@ ABBCharacter::ABBCharacter()
 void ABBCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
 	
 	
 	if(HasAuthority() )
@@ -76,13 +80,6 @@ void ABBCharacter::BeginPlay()
 // 	}
 // }
 
-void ABBCharacter::SetBBCharacterType(EBBCharacterType CharacterType)
-{
-	if(HasAuthority())
-	{
-		BBCharacterType = CharacterType;
-	}
-}
 
 // Called every frame
 void ABBCharacter::Tick(float DeltaTime)
@@ -106,7 +103,7 @@ void ABBCharacter::MoveForward(float value)
 		QueryParams.AddIgnoredActor(this);
 		QueryParams.bTraceComplex = true;
 		
-		bool firstTrace = true, secondTrace = true;
+		bool firstTrace = true, secondTrace = true, slowMove = false;
 		if(GetWorld()->LineTraceSingleByChannel(Hit, ForwardPoint1, traceEnd1, COLLISION_BASEBLOCK, QueryParams))
 		{
 			// FVector unitVec1 = UKismetMathLibrary::GetDirectionUnitVector(ForwardPoint1, traceEnd1);
@@ -119,6 +116,10 @@ void ABBCharacter::MoveForward(float value)
 
 			if(ImpactAngle >= -45.0 && ImpactAngle <=45.0)
 			{
+				if(ImpactAngle <= -25 || ImpactAngle >= 25)
+				{
+					slowMove = true;
+				}
 				DrawDebugLine(GetWorld(), ForwardPoint1, Hit.ImpactPoint, FColor::Red,false, 0.5f,0,1.0f);
 				firstTrace = false;
 			}
@@ -148,6 +149,10 @@ void ABBCharacter::MoveForward(float value)
 
 			if(ImpactAngle >= -45.0 && ImpactAngle <=45.0)
 			{
+				if(ImpactAngle <= -25 || ImpactAngle >= 25)
+				{
+					slowMove = true;
+				}
 				DrawDebugLine(GetWorld(), ForwardPoint2, Hit.ImpactPoint, FColor::Red,false, 0.5f,0,1.0f);
 				secondTrace = false;
 			}
@@ -166,7 +171,7 @@ void ABBCharacter::MoveForward(float value)
 		{
 			AddMovementInput(GetActorForwardVector() * value);
 		}
-		else
+		else if(slowMove)
 		{
 			AddMovementInput(GetActorForwardVector() * value / SlowMultiplier);
 		}
@@ -189,7 +194,7 @@ void ABBCharacter::MoveRight(float value)
 		QueryParams.AddIgnoredActor(this);
 		QueryParams.bTraceComplex = true;
 
-		bool firstTrace = true, secondTrace = true;
+		bool firstTrace = true, secondTrace = true, slowMove = false;
 		if(GetWorld()->LineTraceSingleByChannel(Hit, RightPoint1, traceEnd1, COLLISION_BASEBLOCK, QueryParams))
 		{
 			// FVector unitVec1 = UKismetMathLibrary::GetDirectionUnitVector(RightPoint1, traceEnd1);
@@ -201,6 +206,10 @@ void ABBCharacter::MoveRight(float value)
 
 			if(ImpactAngle >= -45.0 && ImpactAngle <=45.0)
 			{
+				if(ImpactAngle <= -25 || ImpactAngle >= 25)
+				{
+					slowMove = true;
+				}
 				DrawDebugLine(GetWorld(), RightPoint1, Hit.ImpactPoint, FColor::Red,false, 0.5f,0,1.0f);
 				firstTrace = false;
 			}
@@ -226,6 +235,10 @@ void ABBCharacter::MoveRight(float value)
 			UE_LOG(LogTemp, Log, TEXT("Angle: %s"), *FString::SanitizeFloat(ImpactAngle));
 			if(ImpactAngle >= -45.0 && ImpactAngle <=45.0)
 			{
+				if(ImpactAngle <= -25 || ImpactAngle >= 25)
+				{
+					slowMove = true;
+				}
 				DrawDebugLine(GetWorld(), RightPoint2, Hit.ImpactPoint, FColor::Red,false, 0.5f,0,1.0f);
 				secondTrace = false;
 			}
@@ -243,7 +256,7 @@ void ABBCharacter::MoveRight(float value)
 		{
 			AddMovementInput(GetActorRightVector() * value);
 		}
-		else
+		else if(slowMove)
 		{
 			AddMovementInput(GetActorForwardVector() * value / SlowMultiplier);
 		}
@@ -311,7 +324,6 @@ void ABBCharacter::CJump()
 }
 
 
-
 bool ABBCharacter::IsInitiatedJump() const
 {
 	return bIsJumping;
@@ -323,7 +335,7 @@ void ABBCharacter::SetIsJumping(bool NewJumping)
 	{
 		if(!GetCharacterMovement()->IsFalling())
 		{
-			LaunchCharacter(FVector(0,0,420), true, true);
+			LaunchCharacter(FVector(0,0,CrouchJumpZSpeed), true, true);
 		}
 	}
 	else if(NewJumping != bIsJumping)
@@ -434,6 +446,6 @@ void ABBCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 
 	DOREPLIFETIME(ABBCharacter, bIsJumping);
 	DOREPLIFETIME(ABBCharacter, bDied);
-	DOREPLIFETIME(ABBCharacter, BBCharacterType);
+
 }
 
