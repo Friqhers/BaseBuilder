@@ -42,8 +42,8 @@ public:
 	UPROPERTY(VisibleanyWhere, BlueprintReadOnly, Category = "Components")
 	UCameraComponent* CameraComp;
 
-	// UPROPERTY(VisibleanyWhere, BlueprintReadOnly, Category = "Components")
-	// USpringArmComponent* SpringArmComponent;
+	//UPROPERTY(VisibleanyWhere, BlueprintReadOnly, Category = "Components")
+	//USpringArmComponent* SpringArmComponent;
 
 	UPROPERTY(VisibleanyWhere, BlueprintReadOnly, Category = "Components")
 	UArrowComponent* ForwardArrowComponent1;
